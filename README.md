@@ -82,10 +82,10 @@ Learn from experienced cooks and grocery shoppers and provide the resulting guid
 
 ## Backlog
 
-1. Preliminary EDA (1)
-2. Joins/Unions (2)
-3. Text Cleaning (5)
-4. Move from CSV to RDB (2)
+1. Preliminary EDA (1) - Sprint 1
+2. Joins/Unions (2) - Sprint 1
+3. Text Cleaning (5) - Sprint 1
+4. Move from CSV to RDB (2) - Sprint 1
 5. Rule Mining (market basket analysis) (13)
 6. Collaborative Filtering (8)
 7. Historical (common items) (5)
