@@ -29,99 +29,57 @@ Learn from experienced cooks and grocery shoppers and provide the resulting guid
 
 [Click here](https://github.com/michaelfedell/smart_cart/issues) for the live issue board
 
-### Theme 1: Data
+## Project Structure
 
-- Epic 1: Data Management and Preparation
-  - Exploration of available data
-  - Unite data in single source for application use
-  - Text Cleaning
-  - Move from CSV to RDB for speed, persistence, convenience
-  - Fuzzy Matching
+```txt
+├── README.md                         <- You are here
+│
+├── app
+│   ├── static/                       <- CSS, JS files that remain static
+│   ├── templates/                    <- HTML (or other code) that is templated and changes based on a set of inputs
+│   ├── models.py                     <- Creates the data model for the database connected to the Flask app
+│   ├── __init__.py                   <- Initializes the Flask app and database connection
+│
+├── config                            <- Directory for yaml configuration files for model training, scoring, etc
+│   ├── logging/                      <- Configuration files for python loggers
+│
+├── data                              <- Folder that contains data used or generated. Only the external/ and sample/ subdirectories are tracked by git. 
+│   ├── archive/                      <- Place to put archive data is no longer usabled. Not synced with git.
+│   ├── external/                     <- External data sources, will be synced with git
+│   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
+│
+├── docs                              <- A default Sphinx project; see sphinx-doc.org for details.
+│
+├── figures                           <- Generated graphics and figures to be used in reporting.
+│
+├── models                            <- Trained model objects (TMOs), model predictions, and/or model summaries
+│   ├── archive                       <- No longer current models. This directory is included in the .gitignore and is not tracked by git
+│
+├── notebooks
+│   ├── develop                       <- Current notebooks being used in development.
+│   ├── deliver                       <- Notebooks shared with others.
+│   ├── archive                       <- Develop notebooks no longer being used.
+│   ├── template.ipynb                <- Template notebook for analysis with useful imports and helper functions.
+│
+├── src                               <- Source data for the project
+│   ├── archive/                      <- No longer current scripts.
+│   ├── helpers/                      <- Helper scripts used in main src files
+│   ├── sql/                          <- SQL source code
+│   ├── add_songs.py                  <- Script for creating a (temporary) MySQL database and adding songs to it
+│   ├── ingest_data.py                <- Script for ingesting data from different sources
+│   ├── generate_features.py          <- Script for cleaning and transforming data and generating features used for use in training and scoring.
+│   ├── train_model.py                <- Script for training machine learning model(s)
+│   ├── score_model.py                <- Script for scoring new predictions using a trained model.
+│   ├── postprocess.py                <- Script for postprocessing predictions and model results
+│   ├── evaluate_model.py             <- Script for evaluating model performance
+│
+├── test                              <- Files necessary for running model tests (see documentation below)
 
-- Epic 2: Recommender System for List Additions
-  - Rule Mining (market basket analysis of all shopper data)
-  - Historical (common items in user's history)
-  - Collaborative Filtering (suggestions from similar users)
-  - Prioritize Recommendations
-  - Optimize queries
-  - Recommendation Feedback/Tracking
-
-### Theme 2: Users
-
-- Epic 3: User Management
-  - Account Schema (prepare datastore in postgres)
-  - New User Signup Flow
-  - Login/Logout Functionality
-  - Profile/Settings
-
-- Epic 4: Social
-  - Friends
-  - Shared Lists
-  - OAuth
-
-### Theme 3: Interface
-
-- Epic 5: Lists
-  - Reusable List Item Component
-  - Archive for Completed Items
-  - List Ordering (drag & drop or sort by category etc)
-  - Custom Colors/Styling
-  - Click to Add Recommendation
-  - Save List for Later
-  - Multiple Lists
-
-- Epic 6: Recipes
-  - Source Recipe Data
-  - Normalize Recipe Ingredients
-  - Browse Popular Recipes
-  - Send Recipe to List
-  - Saved Recipes
-  - Likely Recipe Matching
-  - Show Recipes Button
-  - Recipe Instruction Interface
-
-## Backlog
-
-1. Preliminary EDA (1) - Sprint 1
-2. Joins/Unions (2) - Sprint 1
-3. Text Cleaning (5) - Sprint 1
-4. Move from CSV to RDB (2) - Sprint 1
-5. Rule Mining (market basket analysis) (13)
-6. Collaborative Filtering (8)
-7. Historical (common items) (5)
-8. Prioritize Recommendations (3)
-9. Account Information (database) (3)
-10. New User (5)
-11. Login/Logout (8)
-12. Shared Lists (3)
-13. OAuth (3)
-14. Profile/Settings (8)
-15. Reusable List Item Component (13)
-16. Archive for Completed Items (8)
-17. List Ordering (drag & drop or sort by category etc) (8)
-18. Custom Colors/Styling (3)
-19. Click to Add Recommendation (5)
-20. Save List for Later (8)
-21. Source Recipe Data (3)
-22. Browse Popular Recipes (3)
-23. Send Recipe to List (5)
-24. Saved Recipes (3)
-
-## Icebox
-
-- 1.1.Fuzzy Matching
-- 1.2.Recommendation Feedback/Tracking
-- 1.2.Optimize Queries
-- 2.4.Friends
-- 3.5.Multiple Lists
-- 3.6.Normalize Recipe Ingredients
-- 3.6.Show Recipes Button
-- 3.6 Likely Recipe Matching
-- 3.6.Recipe Instruction Interface
-
----
-
-## Structure
+├── run.py                            <- Simplifies the execution of one or more of the src scripts
+├── app.py                            <- Flask wrapper for running the model
+├── config.py                         <- Configuration file for Flask app
+├── requirements.txt                  <- Python package dependencies
+```
 
 ## Documentation
 
