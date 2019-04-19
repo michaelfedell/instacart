@@ -1,3 +1,5 @@
+Built by [Michael Fedell](https://github.com/michaelfedell), QA'd by [Finn Qiao](https://github.com/finnqiao)
+
 # Smart Cart
 
 Smart Cart is a comprehensive grocery list manager that offers smart recommendations on things you may want to add to your list!
@@ -84,6 +86,8 @@ Learn from experienced cooks and grocery shoppers and provide the resulting guid
 ## Documentation
 
 ## Getting Started
+
+In this phase of the project, all raw data exist in CSV's as downloaded from Instacart [as linked below](##DataLinks). In order to get up and running yourself, you will need to download these large files and move all `.csv` files into `./data/external/`
 
 ## Testing
 
