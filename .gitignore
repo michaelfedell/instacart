@@ -54,3 +54,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Large data files
+data/external/*.csv
