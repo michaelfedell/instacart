@@ -1,35 +1,32 @@
 Built by [Michael Fedell](https://github.com/michaelfedell), QA'd by [Finn Qiao](https://github.com/finnqiao)
 
-# Smart Cart
+# InstaCart
 
-Smart Cart is a comprehensive grocery list manager that offers smart recommendations on things you may want to add to your list!
+InstaCart has released rich historical data on the grocery shopping habits of their customers. We will use this data to create profiles with predictive power which will help users discover products and stores manage planning and logistical challenges.
 
 Check out the [Project Charter](CHARTER.md) for some background on this project's inception.
 
-Or, to see the planned work, check out the [issues](https://github.com/michaelfedell/smart_cart/issues) or [ZenHub Board](https://github.com/michaelfedell/smart_cart#workspaces/smart-cart-5cae419280656854a0156607/board?repos=180641233)
+Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 
 # Charter
 
-This project was started as a way to improve the grocery shopping experience, especially for young people who are still learning to cook. The project also serves as a testing ground for various tools and technologies such as cloud computing, machine-learning driven recommendation systems, application deployment and maintenance, as well as basic web development in the Flask-python ecosystem.
+This project was started as a way to enrich the grocery shopping experience for both consumers and suppliers. The project also serves as a testing ground for various tools and technologies such as cloud computing, machine-learning driven recommendation systems, application deployment and maintenance, as well as basic web development in the Flask-python ecosystem.
 
 ## Vision
 
-To create a simple and fun experience out of grocery shopping which inspires creativity and exploration.
+To enrich the grocery shopping experience by bringing added convenience and guidance to shoppers, confidence and insight to suppliers, and a delightful interface to all.
 
 ## Mission
 
-Learn from experienced cooks and grocery shoppers and provide the resulting guidance in a sleek application that makes it easy for users to manage grocery lists, find new recipe ideas, and share their findings with friends.
+Learn from experienced grocery shoppers and provide the resulting guidance in a sleek application that makes it easy for users to identify similar shoppers, benchmark their own shopping habits and discover new ideas while simultaneously helping grocery stores manage expectations around revenue, store traffic, and supply needs.
 
 ## Success Criteria
 
-- [] 30% utilization of all served recommendations
-- [] 75% of users adopt recommendations
-- [] ≥ 80% positive feedback on UX design
-- [] manage grocery lists and gather feedback from at least 20 total users
+TODO:
 
 ## Planned Work
 
-[Click here](https://github.com/michaelfedell/smart_cart/issues) for the live issue board
+TODO: [Click here]() for the live issue board
 
 ## Project Structure
 
@@ -46,7 +43,7 @@ Learn from experienced cooks and grocery shoppers and provide the resulting guid
 │   ├── logging/                      <- Configuration files for python loggers
 │
 ├── data                              <- Folder that contains data used or generated. Only the external/ and sample/ subdirectories are tracked by git. 
-│   ├── archive/                      <- Place to put archive data is no longer usabled. Not synced with git.
+│   ├── archive/                      <- Place to put archive data is no longer used. Not synced with git.
 │   ├── external/                     <- External data sources, will be synced with git
 │   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
 │
@@ -63,11 +60,10 @@ Learn from experienced cooks and grocery shoppers and provide the resulting guid
 │   ├── archive                       <- Develop notebooks no longer being used.
 │   ├── template.ipynb                <- Template notebook for analysis with useful imports and helper functions.
 │
-├── src                               <- Source data for the project
+├── src                               <- Source scripts for the project
 │   ├── archive/                      <- No longer current scripts.
 │   ├── helpers/                      <- Helper scripts used in main src files
 │   ├── sql/                          <- SQL source code
-│   ├── add_songs.py                  <- Script for creating a (temporary) MySQL database and adding songs to it
 │   ├── ingest_data.py                <- Script for ingesting data from different sources
 │   ├── generate_features.py          <- Script for cleaning and transforming data and generating features used for use in training and scoring.
 │   ├── train_model.py                <- Script for training machine learning model(s)
