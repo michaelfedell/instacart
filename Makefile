@@ -7,7 +7,7 @@ data/external/raw_data.tar.gz:
 
 data: data/external/raw_data.tar.gz
 
-data/external/aisles.csv:data
+data/external/aisles.csv: data
 data/external/departments.csv: data
 data/external/order_products.csv: data
 data/external/order_products_prior.csv: data
@@ -22,11 +22,14 @@ data/features/shoppers.csv: data/external/aisles.csv data/external/departments.c
 
 features: data/features/shoppers.csv data/features/baskets.csv
 
-db:
+# can change --mode to 'rds' to use RDS db (must have MYSQL_X vars in env)
+db: models/db.py
 	python models/db.py --mode local
 
-ingest: models/db.py data/features/shoppers.csv data/features/baskets.csv
-	python src/ingest_data.py --mode local
+ingest: models/db.py data/features/baskets.csv
+	python models/db.py --mode local --populate True
+
+setup: data put-data-s3 features ingest
 
 models/model.pkl: data/features/user-features.csv src/train_model.py config/model_config.yml
 	python src/train_model.py
@@ -66,3 +69,6 @@ clean-pyc:
 	rm -rf .pytest_cache
 
 clean: clean-tests clean-env clean-pyc
+
+clean-db:
+	rm data/instacart.db
