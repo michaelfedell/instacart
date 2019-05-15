@@ -14,8 +14,8 @@ data/external/order_products_prior.csv: data
 data/external/orders.csv: data
 data/external/products.csv: data
 
-put-data-s3: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
-	python src/upload_s3.py --config config/features_config.yml
+s3: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
+	python src/upload_s3.py
 
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
 	python src/generate_features.py
@@ -29,14 +29,14 @@ db: models/db.py
 ingest: models/db.py data/features/baskets.csv
 	python models/db.py --mode local --populate True
 
-setup: data put-data-s3 features ingest
+setup: data s3 features ingest
 
 models/model.pkl: data/features/user-features.csv src/train_model.py config/model_config.yml
 	python src/train_model.py
 
 trained-model: models/model.pkl
 
-all: fetch-data features db ingest trained-model
+all: setup trained-model
 
 # Create a virtual environment named instacart-env
 instacart-env/bin/activate: requirements.txt
