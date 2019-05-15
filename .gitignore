@@ -44,6 +44,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+instacart-env/
+.instacart-env/
+instacart-env.bak/
 
 # Spyder project settings
 .spyderproject
@@ -60,3 +63,5 @@ data/external/*.csv
 data/external/*.tar.gz
 data/features/*.csv
 data/*.db
+
+# venv
