@@ -1,6 +1,9 @@
 .PHONY: db
 
 DATA_LINK="https://s3.amazonaws.com/instacart-datasets/instacart_online_grocery_shopping_2017_05_01.tar.gz"
+BUCKET="instacart-store"
+# MODE can be "local" or "rds"
+MODE="local"
 
 data/external/raw_data.tar.gz:
 	curl -X GET ${DATA_LINK} -o data/external/raw_data.tar.gz && tar -xvzf data/external/raw_data.tar.gz -C data/external && mv data/external/instacart_2017_05_01/* data/external && rmdir data/external/instacart_2017_05_01
@@ -15,7 +18,7 @@ data/external/orders.csv: data
 data/external/products.csv: data
 
 s3: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
-	python src/upload_s3.py
+	python src/upload_s3.py --bucket ${BUCKET}
 
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
 	python src/generate_features.py
@@ -24,10 +27,10 @@ features: data/features/shoppers.csv data/features/baskets.csv
 
 # can change --mode to 'rds' to use RDS db (must have MYSQL_X vars in env)
 db: models/db.py
-	python models/db.py --mode local
+	python models/db.py --mode ${MODE}
 
 ingest: models/db.py data/features/baskets.csv
-	python models/db.py --mode local --populate True
+	python models/db.py --mode ${MODE} --populate
 
 setup: data s3 features ingest
 
@@ -45,10 +48,6 @@ instacart-env/bin/activate: requirements.txt
 	touch instacart-env/bin/activate
 
 venv: instacart-env/bin/activate
-
-# Run the Flask application
-app:
-	python run.py app
 
 # Run all tests
 test:

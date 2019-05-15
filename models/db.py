@@ -106,6 +106,7 @@ def run_build(args):
                          '`export MYSQL_XXX=YYY` for XXX {USER, PASSWORD, HOST, PORT}')
             logger.info('Defaulting to local sqlite file')
             engine_string = SQLITE_DB_STRING
+
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
     Base.metadata.create_all(engine)
@@ -119,10 +120,10 @@ def run_build(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Create a database with the appropriate tables")
-    parser.add_argument('--mode', default='local',
+    parser.add_argument('--mode', default='local', choices=['local', 'rds'],
                         help='Can be either "local" or "rds" (will create sqlite or mysql)')
-    parser.add_argument('--populate', default=False,
-                        help='Will fill database with features if True')
+    parser.add_argument('--populate', action='store_true',
+                        help='Will fill database with features if included')
     parser.add_argument('--baskets', default='data/features/baskets.csv',
                         help='Path to baskets.csv file')
 
