@@ -57,3 +57,6 @@ venv.bak/
 
 # Large data files
 data/external/*.csv
+data/external/*.tar.gz
+data/features/*.csv
+data/*.db
