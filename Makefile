@@ -32,7 +32,7 @@ db: src/db.py
 	python src/db.py --mode ${MODE}
 
 ingest: src/db.py data/features/baskets.csv
-	python modsrcels/db.py --mode ${MODE} --populate
+	python src/db.py --mode ${MODE} --populate
 
 setup: data s3 features ingest
 

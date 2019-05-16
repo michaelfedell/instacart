@@ -201,10 +201,10 @@ if __name__ == '__main__':
     users = users.join(user_targets.rename('label'))
     users = users[~users.label.isna()]
 
-    logger.info('Feature engineering complete. Saving output...\n\t%s\n\t%s',
-                shoppers_path, orders_path)
     shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
     orders_path = os.path.join(ROOT, 'data', 'features', 'baskets.csv')
+    logger.info('Feature engineering complete. Saving output...\n\t%s\n\t%s',
+                shoppers_path, orders_path)
     users.to_csv(shoppers_path)
     order_types.to_csv(orders_path)
     if config.get('upload'):
