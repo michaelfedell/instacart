@@ -61,7 +61,6 @@ instacart-env.bak/
 # Large data files
 data/external/*.csv
 data/external/*.tar.gz
+!data/external/cats.yml
 data/features/*.csv
 data/*.db
-
-# venv

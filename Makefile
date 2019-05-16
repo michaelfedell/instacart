@@ -1,12 +1,14 @@
 .PHONY: db
 
 DATA_LINK="https://s3.amazonaws.com/instacart-datasets/instacart_online_grocery_shopping_2017_05_01.tar.gz"
+# Overwrite this by running `make BUCKET="my-test-bucket" s3` for example
 BUCKET="instacart-store"
 # MODE can be "local" or "rds"
+# Overwrite this by running `make MODE="rds" db` for example
 MODE="local"
 
 data/external/raw_data.tar.gz:
-	curl -X GET ${DATA_LINK} -o data/external/raw_data.tar.gz && tar -xvzf data/external/raw_data.tar.gz -C data/external && mv data/external/instacart_2017_05_01/* data/external && rmdir data/external/instacart_2017_05_01
+	curl -X GET ${DATA_LINK} -o data/external/raw_data.tar.gz && tar -xvzf data/external/raw_data.tar.gz -C data/external && mv data/external/instacart_2017_05_01/* data/external && rm -rf data/external/instacart_2017_05_01
 
 data: data/external/raw_data.tar.gz
 
@@ -25,12 +27,12 @@ data/features/shoppers.csv: data/external/aisles.csv data/external/departments.c
 
 features: data/features/shoppers.csv data/features/baskets.csv
 
-# can change --mode to 'rds' to use RDS db (must have MYSQL_X vars in env)
-db: models/db.py
-	python models/db.py --mode ${MODE}
+# can change MODE to 'rds' to use RDS db (must have MYSQL_X vars in env)
+db: src/db.py
+	python src/db.py --mode ${MODE}
 
-ingest: models/db.py data/features/baskets.csv
-	python models/db.py --mode ${MODE} --populate
+ingest: src/db.py data/features/baskets.csv
+	python modsrcels/db.py --mode ${MODE} --populate
 
 setup: data s3 features ingest
 
@@ -43,11 +45,17 @@ all: setup trained-model
 
 # Create a virtual environment named instacart-env
 instacart-env/bin/activate: requirements.txt
-	test -d instacart-env || virtualenv instacart-env
-	. instacart-env/bin/activate && pip install -r requirements.txt
+	(test -d instacart-env || virtualenv instacart-env) && . instacart-env/bin/activate && pip install -r requirements.txt
+
 	touch instacart-env/bin/activate
 
 venv: instacart-env/bin/activate
+
+.conda-env: requirements.txt
+	conda create -n instacart python=3.7 && touch .conda-env
+
+conda: .conda-env
+	conda activate instacart && pip install -r requirements.txt
 
 # Run all tests
 test:
@@ -62,6 +70,7 @@ clean-tests:
 
 clean-env:
 	rm -r instacart-env
+	rm .conda-env
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
