@@ -68,6 +68,12 @@ Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 
 ## Getting Started
 
+Although you should be able to run this project in development without any fuss, few configurations are required in order to interface with production resources.
+
+Data can be optionally uploaded to/downloaded from an S3 bucket. This will require you to have installed and configured the AWS CLI tools. [More information can be found here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
+
+Additionally, the application can interface with a cloud database instead of a local, SQLite database. This will also require that you have a valid AWS account and a configured RDS instance, with environment variables set for MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, and MYSQL_PORT.
+
 In this phase of the project, all raw data exist in CSV's as downloaded from Instacart [as linked below](##DataLinks). In order to get up and running yourself, you will need to download these large files into `./data/external/` along with several other setup steps required before running the application.
 
 Luckily for you, all this can be easily automated using the included Makefile
