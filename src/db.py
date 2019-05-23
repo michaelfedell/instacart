@@ -1,12 +1,18 @@
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, Float, String, MetaData
-import sqlalchemy as sql
+import argparse
 import logging
 import os
+import sys;
+
 import pandas as pd
+import sqlalchemy as sql
 from scipy.stats import mode
-import argparse
+from sqlalchemy import Column, Integer, Float
+from sqlalchemy.ext.declarative import declarative_base
+
+sys.path.appen('..')  # so that config can be imported from project root
+import config
+import yaml
 
 Base = declarative_base()
 
@@ -15,81 +21,70 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-DATABASE_NAME = 'instacart'
-SQLITE_DB_STRING = 'sqlite:///data/{}.db'.format(DATABASE_NAME)
-
-conn_type = 'mysql+pymysql'
-user = os.environ.get('MYSQL_USER')
-password = os.environ.get('MYSQL_PASSWORD')
-host = os.environ.get('MYSQL_HOST')
-port = os.environ.get('MYSQL_PORT')
-RDS_DB_STRING = '{}://{}:{}@{}:{}/{}'\
-                .format(conn_type, user, password, host, port, DATABASE_NAME)
+with open(os.path.join('config', 'features_config.yml'), 'r') as f:
+    col_types = yaml.load(f).get('col_types')
 
 
 class OrderType(Base):
-    """Create a data model for order types derived from cluster centroids."""
+    """Create a data model for order types derived from cluster centroids.
+
+    Each of these rows will describe one of the order types derived from
+    clustering during the feature generation process. An order type is
+    described by its centroid for the most part. Temporal features and order_size
+    are defined by the mode of the cluster since most common hour of day is more
+    interesting than the average of all times (same logic for other mode values).
+    """
     __tablename__ = 'ordertypes'
+    # We use the column_types (mean or mode) to determine if column should be stored as int or float
+    col_types = {col: (Integer if t == 'mode' else Float)
+                 for col, t in col_types.items()}
 
-    label = Column(Integer, primary_key=True)
-
+    index = Column(Integer, primary_key=True)
+    label = Column(Integer, unique=False, nullable=False)
     # Described by means
-    reordered = Column(Float, unique=False, nullable=False)
-    organic = Column(Float, unique=False, nullable=False)
-    popular = Column(Float, unique=False, nullable=False)
-    prepared = Column(Float, unique=False, nullable=False)
-    dairy = Column(Float, unique=False, nullable=False)
-    gluten = Column(Float, unique=False, nullable=False)
-    snack = Column(Float, unique=False, nullable=False)
-    meat = Column(Float, unique=False, nullable=False)
-    fish = Column(Float, unique=False, nullable=False)
-    beverage = Column(Float, unique=False, nullable=False)
-    veg = Column(Float, unique=False, nullable=False)
-    order_size = Column(Float, unique=False, nullable=False)
+    reordered = Column(col_types.get('reordered', Float), unique=False, nullable=False)
+    organic = Column(col_types.get('organic', Float), unique=False, nullable=False)
+    popular = Column(col_types.get('popular', Float), unique=False, nullable=False)
+    prepared = Column(col_types.get('prepared', Float), unique=False, nullable=False)
+    dairy = Column(col_types.get('dairy', Float), unique=False, nullable=False)
+    gluten = Column(col_types.get('gluten', Float), unique=False, nullable=False)
+    snack = Column(col_types.get('snack', Float), unique=False, nullable=False)
+    meat = Column(col_types.get('meat', Float), unique=False, nullable=False)
+    fish = Column(col_types.get('fish', Float), unique=False, nullable=False)
+    beverage = Column(col_types.get('beverage', Float), unique=False, nullable=False)
+    veg = Column(col_types.get('veg', Float), unique=False, nullable=False)
 
     # Described by modes
-    order_dow = Column(Integer, unique=False, nullable=False)
-    order_hour_of_day = Column(Integer, unique=False, nullable=False)
-    days_since_prior_order = Column(Integer, unique=False, nullable=False)
-    order_size = Column(Integer, unique=False, nullable=False)
+    order_dow = Column(col_types.get('order_dow', Float), unique=False, nullable=False)
+    order_hour_of_day = Column(col_types.get('order_hour_of_day', Float), unique=False, nullable=False)
+    days_since_prior_order = Column(col_types.get('days_since_prior_order', Float), unique=False, nullable=False)
+    order_size = Column(col_types.get('order_size', Float), unique=False, nullable=False)
 
     def __repr__(self):
         return '<OrderType %s>' % self.label
 
 
+def agg_orders(orders, col_types):
+    """Aggregate orders by each cluster and define cluster characteristics"""
+    amode = lambda x: int(mode(x)[0])  # return the mode value only, not counts
+    # We need to replace the string "mode" in col_types dict with our lambda function for agg
+    col_types = {col: (amode if t == 'mode' else t)
+                 for col, t in col_types.items()}
+
+    return orders.groupby('label').agg(col_types)
+
+
 def run_ingest(engine_string, baskets_path):
     orders = pd.read_csv(baskets_path)
-    amode = lambda x: mode(x)[0]
 
     logger.debug('Aggregating orders by label')
-    order_types = orders.groupby('label').agg({
-        'reordered':    'mean',
-        'organic':      'mean',
-        'popular':      'mean',
-        'prepared':     'mean',
-        'dairy':        'mean',
-        'gluten':       'mean',
-        'snack':        'mean',
-        'meat':         'mean',
-        'fish':         'mean',
-        'beverage':     'mean',
-        'veg':          'mean',
-        'order_size':   'mean',
-
-        'order_dow':              amode,
-        'order_hour_of_day':      amode,
-        'days_since_prior_order': amode,
-        'order_size':             amode
-    })
-    del orders
+    order_types = agg_orders(orders, col_types)
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
 
     logger.info('Writing %d order types to database', len(order_types))
     order_types.index = order_types.index.astype(int)
-    cols = ['order_dow', 'order_hour_of_day', 'days_since_prior_order', 'order_size']
-    order_types[cols] = order_types[cols].astype(int)
     order_types.to_sql('ordertypes', engine, if_exists='append')
 
     logger.info('Done!')
@@ -97,15 +92,16 @@ def run_ingest(engine_string, baskets_path):
 
 def run_build(args):
     if args.mode == 'local':
-        engine_string = SQLITE_DB_STRING
+        engine_string = config.SQLITE_DB_STRING
     elif args.mode == 'rds':
-        engine_string = RDS_DB_STRING
-        if (user is None or password is None or
-                host is None or port is None):
+        engine_string = config.RDS_DB_STRING
+        # Default to local if any required env vars are missing
+        if (config.user is None or config.password is None or
+                config.host is None or config.port is None):
             logger.error('MYSQL environment vars not specified. Be sure to '
                          '`export MYSQL_XXX=YYY` for XXX {USER, PASSWORD, HOST, PORT}')
             logger.info('Defaulting to local sqlite file')
-            engine_string = SQLITE_DB_STRING
+            engine_string = config.SQLITE_DB_STRING
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)

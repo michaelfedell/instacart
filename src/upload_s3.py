@@ -39,6 +39,7 @@ def run_upload(args):
         s3.upload_file(path, args.bucket, path)
     logger.info('Done!')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Upload local files to S3")
     # parser.add_argument('--config', default='config/features_config.yml',

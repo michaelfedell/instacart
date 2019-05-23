@@ -1,3 +1,6 @@
+# cats.yml maps many of the aisles in aisles.csv to one or more of several macro categories describing the
+# type of food on that aisle. This is used to augment the data and provide a higher level of classification
+
 prepared: ['prepared soups salads', 'instant foods', 'packaged meat', 'prepared meals', 'packaged cheese', 'popcorn jerky', 'refrigerated', 'packaged produce', 'frozen meat seafood', 'frozen meals', 'packaged poultry', 'frozen breakfast', 'canned meals beans', 'refrigerated pudding desserts', 'frozen pizza', 'canned jarred vegetables', 'canned meat seafood', 'lunch meat', 'canned fruit applesauce', 'frozen produce', 'packaged vegetables fruits']
 dairy: ['specialty cheeses', 'packaged cheese', 'butter', 'ice cream ice', 'cream', 'milk', 'ice cream toppings', 'other creams cheeses', 'yogurt']
 gluten: ['energy granola bars', 'bakery desserts', 'fresh pasta', 'baking ingredients', 'buns rolls', 'granola', 'frozen breads doughs', 'cookies cakes', 'grains rice dried goods', 'crackers', 'breakfast bakery', 'doughs gelatins bake mixes', 'bread', 'cereal', 'tortillas flat bread', 'hot cereal pancake mixes', 'dry pasta']

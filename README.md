@@ -27,7 +27,7 @@ Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 │   ├── archive/                      <- Place to put archive data is no longer used. Not synced with git
 │   ├── external/                     <- External data sources, will be synced with git
 │   │   ├── cats.yml                  <- Curated list of high-level categories by which to classify grocery aisles
-│   │   ├── data_description.md       <- Description of data files provided by instacart
+│   │   ├── data_description.md       <- Description of data files provided by Instacart
 │   │
 │   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
 │
@@ -84,6 +84,12 @@ make conda
 make venv
 ```
 
+Perform the entire **setup** process from downloading raw data to feature engineering to persistence in S3/database
+
+```bash
+make setup
+```
+
 **Download** raw data from Instacart website and unpack in the appropriate location
 
 ```bash
@@ -119,12 +125,6 @@ make MODE="rds" db
 ```bash
 make ingest
 make MODE="rds" ingest
-```
-
-Perform the entire **setup** process from downloading raw data to feature engineering to persistence in S3/database
-
-```bash
-make setup
 ```
 
 ## Testing

@@ -8,3 +8,19 @@ cov_type: 'full'
 k: 8
 save_cluster_heatmap: False
 upload: True
+col_types:
+  'reordered': 'mean'
+  'organic': 'mean'
+  'popular': 'mean'
+  'prepared': 'mean'
+  'dairy': 'mean'
+  'gluten': 'mean'
+  'snack': 'mean'
+  'meat': 'mean'
+  'fish': 'mean'
+  'beverage': 'mean'
+  'veg': 'mean'
+  'order_dow': 'mode'
+  'order_hour_of_day': 'mode'
+  'days_since_prior_order': 'mode'
+  'order_size': 'mode'
