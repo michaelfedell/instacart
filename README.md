@@ -76,7 +76,13 @@ Additionally, the application can interface with a cloud database instead of a l
 
 In this phase of the project, all raw data exist in CSV's as downloaded from Instacart [as linked below](##DataLinks). In order to get up and running yourself, you will need to download these large files into `./data/external/` along with several other setup steps required before running the application.
 
-Luckily for you, all this can be easily automated using the included Makefile
+### Environment
+
+The `MODE` environment variable will control the use of database (should be 'local' or 'rds')  
+The `BUCKET` environment variable will point S3 interactions to bucket of that name (default 'instacart-store')  
+All `MYSQL_XXX` variables described above will need to be set for rds connection
+
+Running `train_model.py` will set a `TMO_PATH` variable to the created model, alternatively, `src.helpers.get_newest_model` can be used to in conjunction with `src.helpers.get_files` to get the created model (as loaded object)
 
 ### Using the Makefile
 
