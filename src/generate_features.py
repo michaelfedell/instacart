@@ -28,7 +28,7 @@ def load_data(data_dir, file_name):
 
 def clean(X):
     nans = np.isnan(X).any(axis=1)
-    logger.debug('Removing %d rows with nan values in order features (X)',
+    logger.debug('Removing %d rows with nan values in order features',
                  sum(nans))
     return X[~nans]
 

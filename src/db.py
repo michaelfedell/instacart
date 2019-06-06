@@ -2,15 +2,14 @@ from sqlalchemy.ext.declarative import declarative_base
 import argparse
 import logging
 import os
-import sys;
+import sys
 
 import pandas as pd
 import sqlalchemy as sql
 from scipy.stats import mode
 from sqlalchemy import Column, Integer, Float
 from sqlalchemy.ext.declarative import declarative_base
-
-sys.path.appen('..')  # so that config can be imported from project root
+sys.path.append(os.path.dirname(sys.path[0]))  # so that config can be imported from project root
 import config
 import yaml
 

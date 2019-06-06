@@ -96,6 +96,12 @@ Perform the entire **setup** process from downloading raw data to feature engine
 make setup
 ```
 
+Continue the process **all** the way through the modeling and stage at which point the application is ready to run
+
+```bash
+make all
+```
+
 **Download** raw data from Instacart website and unpack in the appropriate location
 
 ```bash
@@ -135,7 +141,8 @@ make MODE="rds" ingest
 
 ## Testing
 
-No tests have yet been implemented, but they will be documented here as the project progresses.
+Unit Tests are implemented for helper/utility functions around the modeling pipeline wherever deemed appropriate. To run tests, simply execute `$ pytest` from the project root directory
+
 
 ## Acknowledgements
 

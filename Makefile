@@ -64,9 +64,6 @@ test:
 # Clean up things
 clean-tests:
 	rm -rf .pytest_cache
-	rm -r test/model/test/
-	mkdir test/model/test
-	touch test/model/test/.gitkeep
 
 clean-env:
 	rm -r instacart-env
