@@ -64,3 +64,4 @@ data/external/*.tar.gz
 !data/external/cats.yml
 data/features/*.csv
 data/*.db
+models/*

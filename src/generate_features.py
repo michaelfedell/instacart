@@ -139,11 +139,6 @@ def build_users(orders):
     return users
 
 
-def gen_plots(order_types):
-    # TODO: implement heatmap plotting and save imgs
-    pass
-
-
 if __name__ == '__main__':
     with open(os.path.join(ROOT, 'config', 'features_config.yml'), 'r') as f:
         config = yaml.load(f)

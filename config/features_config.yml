@@ -3,11 +3,10 @@ s3_bucket-name: 'instacart-store'
 popular_threshold: 7
 scale_x: True
 cluster-method: 'gmm'
-n_components: 11
+n_components: 6
 cov_type: 'full'
 k: 8
-save_cluster_heatmap: False
-upload: True
+upload: False
 col_types:
   'reordered': 'mean'
   'organic': 'mean'

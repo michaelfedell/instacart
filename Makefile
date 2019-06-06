@@ -36,8 +36,8 @@ ingest: src/db.py data/features/baskets.csv
 
 setup: data s3 features ingest
 
-models/model.pkl: data/features/user-features.csv src/train_model.py config/model_config.yml
-	python src/train_model.py
+models/model.pkl: data/features/shoppers.csv src/train_model.py config/model_config.yml
+	python src/train_model.py --bucket ${BUCKET}
 
 trained-model: models/model.pkl
 
