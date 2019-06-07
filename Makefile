@@ -1,4 +1,4 @@
-.PHONY: db
+.PHONY: db s3
 
 DATA_LINK="https://s3.amazonaws.com/instacart-datasets/instacart_online_grocery_shopping_2017_05_01.tar.gz"
 # Overwrite this by running `make BUCKET="my-test-bucket" s3` for example

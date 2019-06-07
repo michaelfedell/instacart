@@ -9,6 +9,7 @@ from sklearn import preprocessing
 from sklearn.cluster import KMeans
 from sklearn.metrics import calinski_harabaz_score as score_ch
 from sklearn.mixture import GaussianMixture as GMM
+from sklearn.decomposition import FactorAnalysis
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -139,6 +140,35 @@ def build_users(orders):
     return users
 
 
+def get_factors(shoppers, n_components=4, random_state=903):
+    """
+    Find Factors to represent the shopper-level features in compressed space.
+    These factors will be used to map simplified user input from application
+    to the full feature space used in modeling.
+
+    Args:
+        shoppers (pd.DataFrame): full set of shoppers in feature data (train + test)
+        n_components (int): number of factors to mine. Defaults to 4 and should stay that way (application
+                            UI based on these 4 analyzed factors)
+        random_state (int): sets random state for factor analysis algorithm. Defaults to 4 (and should stay that way)
+
+    Returns:
+        pd.DataFrame: will have n_components rows and n_features columns. The values of this matrix
+                      can be used to map factors to full feature set.
+
+    """
+    # Remove columns which should not be considered in factor analysis
+    for col in ['user_id', 'n_order', 'label']:
+        if col in shoppers.columns:
+            shoppers.drop(columns=col, inplace=True)
+
+    # Need to scale data as columns on incommensurate scales
+    x = preprocessing.scale(shoppers)
+    fa = FactorAnalysis(n_components, random_state=random_state)
+    fa.fit(x)
+    return pd.DataFrame(fa.components_, columns=shoppers.columns)
+
+
 if __name__ == '__main__':
     with open(os.path.join(ROOT, 'config', 'features_config.yml'), 'r') as f:
         config = yaml.load(f)
@@ -215,9 +245,6 @@ if __name__ == '__main__':
 
     order_types = cluster(order_types, config)
 
-    if config.get('save_cluster_heatmap'):
-        gen_plots(order_types)
-
     ###########################################################################
     # Build Users Data ########################################################
     ###########################################################################
@@ -233,16 +260,21 @@ if __name__ == '__main__':
     user_targets = user_targets.groupby('user_id')['label'].first()
     shoppers = shoppers.join(user_targets.rename('label'))
     shoppers = shoppers[~shoppers.label.isna()]
+    factors = get_factors(shoppers)
 
     shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
     orders_path = os.path.join(ROOT, 'data', 'features', 'baskets.csv')
-    logger.info('Feature engineering complete. Saving output...\n\t%s\n\t%s',
-                shoppers_path, orders_path)
+    factors_path = os.path.join(ROOT, 'data', 'features', 'features.csv')
+
+    logger.info('Feature engineering complete. Saving output...\n\t%s\n\t%s\n\t%s',
+                shoppers_path, orders_path, factors_path)
     shoppers.to_csv(shoppers_path)
     order_types.to_csv(orders_path)
+    factors.to_csv(factors_path)
     if config.get('upload'):
         bucket_name = config.get('s3_bucket-name')
         logger.debug('Uploading to S3 bucket: %s', bucket_name)
         s3 = boto3.client('s3')
         s3.upload_file(shoppers_path, bucket_name, 'shoppers.csv')
         s3.upload_file(orders_path, bucket_name, 'baskets.csv')
+        s3.upload_file(factors_path, bucket_name, 'features.csv')
