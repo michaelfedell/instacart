@@ -1,0 +1,20 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block styles %}
+{{super()}}
+<link href="https://fonts.googleapis.com/css?family=Montserrat:900|Lato:400,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+{% endblock %}
+
+{% block title %}
+{% if title %}{{ title }} - InstaCart{% else %}InstaCart{% endif %}
+{% endblock %}
+
+
+{% block content %}
+{# application content needs to be provided in the app_content block #}
+<div class="container-fluid">
+    {% block app_content %}{% endblock %}
+</div>
+{% endblock %}

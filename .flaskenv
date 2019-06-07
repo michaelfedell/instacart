@@ -1,0 +1,2 @@
+FLASK_APP=instacart.py
+FLASK_ENV=development

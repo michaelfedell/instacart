@@ -2,10 +2,11 @@ import os
 import logging
 
 logger = logging.getLogger(__name__)
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 DATABASE_NAME = 'instacart'
-SQLITE_DB_STRING = 'sqlite:///data/{}.db'.format(DATABASE_NAME)
+SQLITE_DB_STRING = 'sqlite:///' + os.path.join(basedir, 'data/{}.db'.format(DATABASE_NAME))
 
 conn_type = 'mysql+pymysql'
 user = os.environ.get('MYSQL_USER')
@@ -14,6 +15,7 @@ host = os.environ.get('MYSQL_HOST')
 port = os.environ.get('MYSQL_PORT')
 RDS_DB_STRING = '{}://{}:{}@{}:{}/{}'\
                 .format(conn_type, user, password, host, port, DATABASE_NAME)
+LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
 
 DEBUG = True
 LOGGING_CONFIG = 'config/logging/local.conf'
