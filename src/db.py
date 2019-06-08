@@ -1,4 +1,3 @@
-from sqlalchemy.ext.declarative import declarative_base
 import argparse
 import logging
 import os
@@ -6,7 +5,6 @@ import sys
 
 import pandas as pd
 import sqlalchemy as sql
-from scipy.stats import mode
 from sqlalchemy import Column, Integer, Float
 from sqlalchemy.ext.declarative import declarative_base
 sys.path.append(os.path.dirname(sys.path[0]))  # so that config can be imported from project root
@@ -63,21 +61,8 @@ class OrderType(Base):
         return '<OrderType %s>' % self.label
 
 
-def agg_orders(orders, col_types):
-    """Aggregate orders by each cluster and define cluster characteristics"""
-    amode = lambda x: int(mode(x)[0])  # return the mode value only, not counts
-    # We need to replace the string "mode" in col_types dict with our lambda function for agg
-    col_types = {col: (amode if t == 'mode' else t)
-                 for col, t in col_types.items()}
-
-    return orders.groupby('label').agg(col_types)
-
-
-def run_ingest(engine_string, baskets_path):
-    orders = pd.read_csv(baskets_path)
-
-    logger.debug('Aggregating orders by label')
-    order_types = agg_orders(orders, col_types)
+def run_ingest(engine_string, order_types_path):
+    order_types = pd.read_csv(order_types_path)
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
@@ -101,6 +86,9 @@ def run_build(args):
                          '`export MYSQL_XXX=YYY` for XXX {USER, PASSWORD, HOST, PORT}')
             logger.info('Defaulting to local sqlite file')
             engine_string = config.SQLITE_DB_STRING
+    else:
+        logger.warning('%s is not a valid mode, defaulting to local', args.mode)
+        engine_string = config.SQLITE_DB_STRING
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
