@@ -11,6 +11,8 @@ from sklearn.metrics import calinski_harabasz_score as score_ch
 from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import FactorAnalysis
 from scipy.stats import mode
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 cluster_methods = {
@@ -176,32 +178,34 @@ def agg_orders(orders, col_types):
     return orders.groupby('label').agg(col_types)
 
 
-def build_shoppers(orders):
+def build_shoppers(all_orders):
     """
     Build shoppers data by aggregating all the orders for each user_id
 
     Args:
-        orders (pd.DataFrame): all orders in dataset with labels added
+        all_orders (pd.DataFrame): all orders in dataset with labels added
 
     Returns:
         pd.DataFrame: Users with features derived from order history
 
     """
-    history = orders[orders['eval_set'] == 'prior']
+    history = all_orders[all_orders['eval_set'] == 'prior']
     shoppers = pd.DataFrame(history.groupby('user_id').size().rename('n_orders'))
-
+    logger.debug(shoppers.columns)
     # Get num orders per day of week for each user
     dow_counts = history.pivot_table(index='user_id', columns='order_dow',
                                      values='order_number', aggfunc='count')
     dow_counts.columns = ['n_dow_{}'.format(col)
                           for col in dow_counts.columns]
     shoppers = shoppers.join(dow_counts.fillna(0))
+    logger.debug(shoppers.columns)
 
     # Get num orders per hour of day for each user
     hod_counts = history.pivot_table(index='user_id', columns='order_hour_of_day',
                                      values='order_number', aggfunc='count')
     hod_counts.columns = ['n_hod_{}'.format(col) for col in hod_counts.columns]
     shoppers = shoppers.join(hod_counts.fillna(0))
+    logger.debug(shoppers.columns)
 
     # Capture each user's typical order size with summary statistics
     order_size_stats = history.groupby('user_id').agg({
@@ -215,19 +219,25 @@ def build_shoppers(orders):
     size_count = history.pivot_table(index='user_id', columns='size_cat',
                                      values='order_number', aggfunc='count')
     shoppers = shoppers.join(size_count.fillna(0))
+    logger.debug(shoppers.columns)
 
     # Describe users by the composition of their typical order
     cols = ['days_since_prior_order', 'reordered', 'organic', 'popular']
     cols += cats
     means = full.groupby('user_id')[cols].mean()
     shoppers = shoppers.join(means)
+    logger.debug(shoppers.columns)
 
     # Add target variable (order_type for next purchase)
     # eval_set == train for each user's most recent purchase in the dataset
-    targets = orders[orders['eval_set'] == 'train']
+    targets = all_orders[all_orders['eval_set'] == 'train']
     targets = targets.groupby('user_id')['label'].first()
+    logger.debug(targets.head())
     shoppers = shoppers.join(targets.rename('label'))
+    logger.debug(shoppers.columns)
+
     shoppers = shoppers[~shoppers.label.isna()]
+    logger.debug(shoppers.columns)
 
     return shoppers
 
@@ -251,15 +261,23 @@ def get_factors(shoppers, n_components=4, random_state=903, **kwargs):
 
     """
     # Remove columns which should not be considered in factor analysis
-    for col in ['user_id', 'n_order', 'label']:
-        if col in shoppers.columns:
-            shoppers.drop(columns=col, inplace=True)
+    x = shoppers
+    for col in ['user_id', 'n_orders', 'label']:
+        if col in x.columns:
+            x = x.drop(columns=col)
 
     # Need to scale data as columns on incommensurate scales
-    x = preprocessing.scale(shoppers)
+    cols = x.columns
+    x = preprocessing.scale(x)
     fa = FactorAnalysis(n_components, random_state=random_state, **kwargs)
     fa.fit(x)
-    return pd.DataFrame(fa.components_, columns=shoppers.columns)
+    return pd.DataFrame(fa.components_, columns=cols)
+
+
+def save_factor_map(factors, path):
+    fig, ax = plt.subplots(figsize=(10, 15))
+    sns.heatmap(factors.T, ax=ax, center=0)
+    plt.savefig(path)
 
 
 if __name__ == '__main__':
@@ -337,20 +355,24 @@ if __name__ == '__main__':
     # Limit orders to "prior" set for training data
     logger.debug('Engineering shopper features')
     shoppers = build_shoppers(all_orders)
+    print(shoppers.columns)
     factors = get_factors(shoppers)
 
     shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
     baskets_path = os.path.join(ROOT, 'data', 'features', 'baskets.csv')
     order_types_path = os.path.join(ROOT, 'data', 'features', 'order_types.csv')
     factors_path = os.path.join(ROOT, 'data', 'features', 'factors.csv')
+    factor_map_path = os.path.join(ROOT, 'data', 'features', 'factor_map.png')
 
-    logger.info('Feature engineering complete. Saving output...\n\t%s\n\t%s\n\t%s\n\t%s',
-                shoppers_path, baskets_path, order_types_path, factors_path)
+    logger.info('Feature engineering complete. Saving output...'
+                '\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s',
+                shoppers_path, baskets_path, order_types_path, factors_path, factor_map_path)
 
     shoppers.to_csv(shoppers_path)
     all_orders.to_csv(baskets_path)
     order_types.to_csv(order_types_path)
     factors.to_csv(factors_path)
+    save_factor_map(factors, factor_map_path)
 
     if config.get('upload'):
         bucket_name = config.get('s3_bucket-name')

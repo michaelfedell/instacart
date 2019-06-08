@@ -1,6 +1,15 @@
 read_from: 'local'
 s3_bucket-name: 'instacart-store'
+upload: False
+save_fac_map: True
+
 popular_threshold: 7
+categoricals: ['order_dow', 'order_hour_of_day', 'days_since_prior_order',
+               'eval_set', 'order_number', 'user_id', 'size_cat']
+size_cat:
+  bins: [0, 5, 10, 20, 10000]
+  labels: ['small', 'medium', 'large', 'xl']
+
 scale_clusters: True
 cluster-method: 'gmm'
 gmm:
@@ -8,12 +17,7 @@ gmm:
   covariance_type: 'full'
 kmeans:
   k: 8
-upload: False
-categoricals: ['order_dow', 'order_hour_of_day', 'days_since_prior_order',
-               'eval_set', 'order_number', 'user_id', 'size_cat']
-size_cat:
-  bins: [0, 5, 10, 20, 10000]
-  labels: ['small', 'medium', 'large', 'xl']
+
 col_types:
   'reordered': 'mean'
   'organic': 'mean'
