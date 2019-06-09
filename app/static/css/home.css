@@ -13,7 +13,7 @@ body {
     -moz-box-sizing: border-box;
     -webkit-box-sizing: border-box;
     border-radius: 30px;
-    position: absolute;
+    position: fixed;
     display: inline;
 }
 
@@ -29,19 +29,6 @@ body {
 button.btn {
     font-weight: 700;
     border: 1px solid #434343;
-}
-
-a {
-    color: #23272b;
-    text-decoration: underline;
-}
-a:hover {
-    -webkit-transition: 0.15s;
-    -moz-transition: 0.15s;
-    -ms-transition: 0.15s;
-    -o-transition: 0.15s;
-    transition: 0.15s;
-    color: #1FB5C2;
 }
 
 .slider {
