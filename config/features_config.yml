@@ -2,6 +2,7 @@ read_from: 'local'
 s3_bucket-name: 'instacart-store'
 upload: False
 save_fac_map: True
+save_cluster_map: app/static/heatmap.png
 
 popular_threshold: 7
 categoricals: ['order_dow', 'order_hour_of_day', 'days_since_prior_order',
@@ -15,8 +16,10 @@ cluster-method: 'gmm'
 gmm:
   n_components: 6
   covariance_type: 'full'
+  random_state: 903
 kmeans:
   k: 8
+  random_state: 903
 
 col_types:
   'reordered': 'mean'

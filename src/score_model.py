@@ -12,6 +12,7 @@ from sklearn import preprocessing
 from sklearn.linear_model import LogisticRegression as logistic
 from sklearn.ensemble import RandomForestClassifier as random_forest
 from sklearn.ensemble import GradientBoostingClassifier as gradient_boosting
+from sklearn.preprocessing import scale
 from sklearn.svm import LinearSVC as linear_svc
 from sklearn.metrics import accuracy_score, f1_score
 from sklearn.model_selection import train_test_split
@@ -25,7 +26,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def predict(model, data):
-    logger.debug('Predicting labels for %d observations with %d features', data.shape)
+    logger.debug('Predicting labels for %d observations with %d features', data.shape[0], data.shape[1])
     logger.debug('Model is of type %s', model)
     data = data.values if isinstance(data, pd.DataFrame) else data
     if np.any(np.abs(data) > 5):
@@ -115,3 +116,40 @@ def get_feature_names(factors_path):
         return col_names[1:]
     else:
         return col_names
+
+
+def predict_file(model, f, cols):
+    """
+
+    Args:
+        model:
+        f:
+        cols:
+
+    Returns:
+
+    """
+    bad_data = False
+
+    data = pd.read_csv(f)
+    if 'user_id' in data.columns:
+        data.set_index('user_id', inplace=True)
+    if 'label' in data.columns:
+        data.drop(columns='label', inplace=True)
+
+    for col in cols:
+        if col not in data.columns:
+            bad_data = True
+            logger.error('Data is missing column for: %s', col)
+    if len(data.columns) != 51:
+        logger.error('Data does not have the correct number of columns')
+        bad_data = True
+    x = data.values
+    if np.any(np.abs(x) > 5):
+        logger.warning('Data has absolute values greater than 5; scaling to standard normal')
+        x = scale(x)
+    if bad_data:
+        raise ValueError('Data was not of the required format')
+
+    labels = model.predict(x)
+    return np.unique(labels, return_counts=True)

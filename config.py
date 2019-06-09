@@ -7,7 +7,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 DATABASE_NAME = 'instacart'
 SQLITE_DB_STRING = 'sqlite:///' + os.path.join(basedir, 'data/{}.db'.format(DATABASE_NAME))
-
+SECRET_KEY = os.environ.get('SECRET_KEY') or 'default-session-key'
 conn_type = 'mysql+pymysql'
 user = os.environ.get('MYSQL_USER')
 password = os.environ.get('MYSQL_PASSWORD')

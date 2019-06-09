@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 import sqlalchemy as sql
-from sqlalchemy import Column, Integer, Float
+from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.ext.declarative import declarative_base
 sys.path.append(os.path.dirname(sys.path[0]))  # so that config can be imported from project root
 import config
@@ -56,6 +56,9 @@ class OrderType(Base):
     order_hour_of_day = Column(col_types.get('order_hour_of_day', Float), unique=False, nullable=False)
     days_since_prior_order = Column(col_types.get('days_since_prior_order', Float), unique=False, nullable=False)
     order_size = Column(col_types.get('order_size', Float), unique=False, nullable=False)
+
+    # Descriptions will be populated by hand upon cluster examination
+    desc = Column(String(240), nullable=True)
 
     def __repr__(self):
         return '<OrderType %s>' % self.label

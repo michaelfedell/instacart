@@ -13,6 +13,7 @@ from sklearn.decomposition import FactorAnalysis
 from scipy.stats import mode
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib as mpl
 
 
 cluster_methods = {
@@ -229,7 +230,7 @@ def build_shoppers(all_orders):
     # eval_set == train for each user's most recent purchase in the dataset
     targets = all_orders[all_orders['eval_set'] == 'train']
     targets = targets.groupby('user_id')['label'].first()
-    logger.debug(targets.head())
+    logger.debug('Targets look like: \n%s', str(targets.head()))
     shoppers = shoppers.join(targets.rename('label'))
 
     shoppers = shoppers[~shoppers.label.isna()]
@@ -272,6 +273,18 @@ def get_factors(shoppers, n_components=4, random_state=903, **kwargs):
 def save_factor_map(factors, path):
     fig, ax = plt.subplots(figsize=(10, 15))
     sns.heatmap(factors.T, ax=ax, center=0)
+    plt.savefig(path)
+
+
+def plot(order_types, path):
+    mpl.rcParams['figure.figsize'] = [12, 8]
+    if 'label' in order_types.columns:
+        order_types = order_types.set_index('label')
+    sub = order_types.columns[:11]
+    plot_data = pd.DataFrame(preprocessing.scale(order_types[sub]), columns=sub).T
+    fig, ax = plt.subplots()
+    sns.heatmap(plot_data, center=0, xticklabels=list(order_types.index), ax=ax)
+    plt.xlabel('cluster label')
     plt.savefig(path)
 
 
@@ -369,6 +382,10 @@ if __name__ == '__main__':
     order_types.to_csv(order_types_path)
     factors.to_csv(factors_path, index=False)
     save_factor_map(factors, factor_map_path)
+    save_heatmap = config.get('save_cluster_map')
+    if save_heatmap:
+        logger.debug('Saving cluster heatmap to %s', save_heatmap)
+        plot(order_types, save_heatmap)
 
     if config.get('upload'):
         bucket_name = config.get('s3_bucket-name')

@@ -5,6 +5,7 @@ import os
 import pickle
 
 import pandas as pd
+import numpy as np
 import yaml
 import boto3
 
@@ -48,7 +49,7 @@ def get_data(data_path, config):
     X = users.drop(columns='label')
     if config.get('scale_data'):
         logger.debug('Scaling data to standard normal')
-        X = preprocessing.scale(X)
+        X = pd.DataFrame(preprocessing.scale(X), columns=X.columns)
     Y = users['label']
     logger.debug('%0.1f%% of data held for testing', 100*config['split']['test_size'])
     data = train_test_split(X, Y, **config['split'])
@@ -101,6 +102,7 @@ def train_model(x_train, y_train, config, sample_weight=None):
     tmo = model(**config.get(model_type))  # instantiated model class with config
     logger.debug('Fitting model to %d training observations with %d features',
                  x_train.shape[0], x_train.shape[1])
+    logger.debug('Labels include: %s', np.unique(y_train))
     logger.debug('Model requires the following features: \n%s', x_train.columns)
     tmo.fit(x_train, y_train, sample_weight)  # model object fit to training data
     logger.debug('Model training completed')

@@ -65,3 +65,5 @@ data/external/*.tar.gz
 data/features/
 data/*.db
 models/*
+
+.flaskenv

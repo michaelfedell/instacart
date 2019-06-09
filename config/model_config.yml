@@ -1,6 +1,6 @@
 model: linear_svc
-scale_data: False
-weight_classes: False
+scale_data: True
+weight_classes: True
 split:
   test_size: 0.25
   random_state: 903
