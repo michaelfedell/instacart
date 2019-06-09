@@ -17,5 +17,6 @@ bootstrap = Bootstrap(app)
 
 # Initialize the database
 db = SQLAlchemy(app)
+app.logger.info('Connected to %s', db.engine)
 
 from app import routes, models
