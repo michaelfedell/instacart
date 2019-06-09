@@ -99,7 +99,9 @@ def train_model(x_train, y_train, config, sample_weight=None):
     model = eval(model_type)  # actual class object imported from sklearn
     logger.debug('Training %s model (%s)', model_type, model)
     tmo = model(**config.get(model_type))  # instantiated model class with config
-    logger.debug('Fitting model to %d training observations', len(x_train))
+    logger.debug('Fitting model to %d training observations with %d features',
+                 x_train.shape[0], x_train.shape[1])
+    logger.debug('Model requires the following features: \n%s', x_train.columns)
     tmo.fit(x_train, y_train, sample_weight)  # model object fit to training data
     logger.debug('Model training completed')
     return tmo
@@ -201,6 +203,8 @@ if __name__ == '__main__':
                         help='Path to shopper data file (may be local or s3)')
     parser.add_argument('-o', '--output', default='models/',
                         help='path to yaml file with model configurations')
+    parser.add_argument('-f', '--force', action='store_true',
+                        help='If true will force overwrite of existing model at specified output')
     parser.add_argument('-u', '--upload', action='store_true',
                         help='If true will upload trained model object to s3 bucket')
     parser.add_argument('-b', '--bucket', default='instacart-store',

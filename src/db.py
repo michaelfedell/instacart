@@ -97,7 +97,7 @@ def run_build(args):
 
     if args.populate:
         logger.debug('Running Ingestion Process')
-        run_ingest(engine_string, args.baskets)
+        run_ingest(engine_string, args.ordertypes)
 
 
 if __name__ == '__main__':
@@ -107,8 +107,8 @@ if __name__ == '__main__':
                         help='Can be either "local" or "rds" (will create sqlite or mysql)')
     parser.add_argument('--populate', action='store_true',
                         help='Will fill database with features if included')
-    parser.add_argument('--baskets', default='data/features/baskets.csv',
-                        help='Path to baskets.csv file')
+    parser.add_argument('--ordertypes', default='data/features/order_types.csv',
+                        help='Path to order_types.csv file')
 
     args = parser.parse_args()
 

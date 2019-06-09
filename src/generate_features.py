@@ -159,6 +159,8 @@ def cluster(all_orders, config):
     model = model_class(**config.get(cluster_method))
     logger.debug('Fitting the following cluster model to %d orders: \n\t%s', len(X), model)
     labels = model.fit_predict(X)
+    # Start labels at 1 for readability
+    labels += 1
 
     logger.debug('Cluster solution score: %f', score_ch(X, labels))
     logger.info('Cluster dispersion: %s',
@@ -191,21 +193,18 @@ def build_shoppers(all_orders):
     """
     history = all_orders[all_orders['eval_set'] == 'prior']
     shoppers = pd.DataFrame(history.groupby('user_id').size().rename('n_orders'))
-    logger.debug(shoppers.columns)
     # Get num orders per day of week for each user
     dow_counts = history.pivot_table(index='user_id', columns='order_dow',
                                      values='order_number', aggfunc='count')
     dow_counts.columns = ['n_dow_{}'.format(col)
                           for col in dow_counts.columns]
     shoppers = shoppers.join(dow_counts.fillna(0))
-    logger.debug(shoppers.columns)
 
     # Get num orders per hour of day for each user
     hod_counts = history.pivot_table(index='user_id', columns='order_hour_of_day',
                                      values='order_number', aggfunc='count')
     hod_counts.columns = ['n_hod_{}'.format(col) for col in hod_counts.columns]
     shoppers = shoppers.join(hod_counts.fillna(0))
-    logger.debug(shoppers.columns)
 
     # Capture each user's typical order size with summary statistics
     order_size_stats = history.groupby('user_id').agg({
@@ -219,14 +218,12 @@ def build_shoppers(all_orders):
     size_count = history.pivot_table(index='user_id', columns='size_cat',
                                      values='order_number', aggfunc='count')
     shoppers = shoppers.join(size_count.fillna(0))
-    logger.debug(shoppers.columns)
 
     # Describe users by the composition of their typical order
     cols = ['days_since_prior_order', 'reordered', 'organic', 'popular']
     cols += cats
     means = full.groupby('user_id')[cols].mean()
     shoppers = shoppers.join(means)
-    logger.debug(shoppers.columns)
 
     # Add target variable (order_type for next purchase)
     # eval_set == train for each user's most recent purchase in the dataset
@@ -234,10 +231,8 @@ def build_shoppers(all_orders):
     targets = targets.groupby('user_id')['label'].first()
     logger.debug(targets.head())
     shoppers = shoppers.join(targets.rename('label'))
-    logger.debug(shoppers.columns)
 
     shoppers = shoppers[~shoppers.label.isna()]
-    logger.debug(shoppers.columns)
 
     return shoppers
 
@@ -355,7 +350,8 @@ if __name__ == '__main__':
     # Limit orders to "prior" set for training data
     logger.debug('Engineering shopper features')
     shoppers = build_shoppers(all_orders)
-    print(shoppers.columns)
+    # n_orders is not relevant to order_type
+    shoppers = shoppers.drop(columns='n_orders')
     factors = get_factors(shoppers)
 
     shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
@@ -371,7 +367,7 @@ if __name__ == '__main__':
     shoppers.to_csv(shoppers_path)
     all_orders.to_csv(baskets_path)
     order_types.to_csv(order_types_path)
-    factors.to_csv(factors_path)
+    factors.to_csv(factors_path, index=False)
     save_factor_map(factors, factor_map_path)
 
     if config.get('upload'):
