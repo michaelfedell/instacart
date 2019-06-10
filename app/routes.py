@@ -27,6 +27,7 @@ days = {i: d for i, d in enumerate(['Sunday', 'Monday', 'Tuesday', 'Wednesday',
 clust_type = fc.get('cluster-method')
 n_clust = fc.get('gmm').get('n_components') if clust_type == 'gmm' else fc.get('kmeans').get('k')
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
