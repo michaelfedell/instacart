@@ -26,13 +26,13 @@ s3: data/external/aisles.csv data/external/departments.csv data/external/order_p
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
 	python src/generate_features.py --download ${DOWNLOAD}
 
-features: data/features/shoppers.csv data/features/baskets.csv
+features: data/features/factors.csv data/features/order_types.csv
 
 # can change MODE to 'rds' to use RDS db (must have MYSQL_X vars in env)
 db: src/db.py
 	python src/db.py --mode ${MODE}
 
-ingest: src/db.py data/features/baskets.csv
+ingest: src/db.py data/features/order_types.csv
 	python src/db.py --mode ${MODE} --populate
 
 setup: data s3 features ingest
