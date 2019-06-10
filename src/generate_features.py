@@ -310,8 +310,8 @@ if __name__ == '__main__':
         data_dir = 's3://{}/'.format(config.get('s3_bucket-name'))
         logger.info('Downloading feature data from S3 bucket %s', bucket_name)
 
-        order_types = pd.read_csv(os.path.join(data_dir, 'order_types.csv'))
-        factors = pd.read_csv(os.path.join(data_dir, 'factors.csv'))
+        order_types = pd.read_csv(os.path.join(data_dir, 'order_types.csv')).set_index('label')
+        factors = pd.read_csv(os.path.join(data_dir, 'factors.csv'), index_col=0)
         order_types.to_csv('data/features/order_types.csv')
         factors.to_csv('data/features/factors.csv')
 
