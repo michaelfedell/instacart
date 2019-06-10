@@ -38,7 +38,7 @@ ingest: src/db.py data/features/order_types.csv
 setup: data s3 features ingest
 
 models/model.pkl: data/features/shoppers.csv src/train_model.py config/model_config.yml
-	python src/train_model.py --bucket ${BUCKET} -o models/model.pkl -f -u
+	python src/train_model.py --bucket ${BUCKET} -o models/model.pkl --download ${DOWNLOAD} -f -u
 
 trained-model: models/model.pkl
 

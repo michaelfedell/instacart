@@ -184,6 +184,19 @@ def run_train_model(args):
     """Call model training steps to run script"""
     with open(args.config) as f:
         config = yaml.load(f)
+    if eval(args.download):
+        logger.info('Downloading model object from s3')
+        s3 = boto3.resource('s3')
+        client = boto3.client('s3')
+        get_last_modified = lambda obj: int(obj['LastModified'].strftime('%s'))
+        objs = client.list_objects_v2(Bucket=args.bucket, Prefix='models')['Contents']
+        model_path = [obj['Key'] for obj in sorted(objs, key=get_last_modified)][0]
+        logger.info('Attempting to download model from %s', model_path)
+        with open('models/model.pkl', 'wb') as data:
+            s3.Bucket(args.bucket).download_fileobj(model_path, data)
+        logger.info('Model downloaded successfully to %s', data.name)
+        exit(0)
+
     data = get_data(os.path.abspath(args.data), config)
     sample_weights = data['train_weights'] if config.get('weight_classes') else None
     model = train_model(data['x_train'], data['y_train'], config, sample_weights)
@@ -203,6 +216,8 @@ if __name__ == '__main__':
                         help='path to yaml file with model configurations')
     parser.add_argument('-d', '--data', default='data/features/shoppers.csv',
                         help='Path to shopper data file (may be local or s3)')
+    parser.add_argument('--download', default='False',
+                        help='If True will download model from s3 instead of training')
     parser.add_argument('-o', '--output', default='models/',
                         help='path to yaml file with model configurations')
     parser.add_argument('-f', '--force', action='store_true',
@@ -210,7 +225,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--upload', action='store_true',
                         help='If true will upload trained model object to s3 bucket')
     parser.add_argument('-b', '--bucket', default='instacart-store',
-                        help='Name of S3 bucket to upload files')
+                        help='Name of S3 bucket to up/download files')
     parser.add_argument('--save_split', default=None,
                         help='Prefix to save split feature files for posterity. None to skip this step.')
 

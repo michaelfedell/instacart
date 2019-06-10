@@ -15,23 +15,23 @@ def get_files(dir_path, file_filter=None, recursive=False):
     if not dir_path:
         logger.warning('Must specify a valid path, not %s', dir_path)
 
-    if dir_path.startswith('s3'):
-        regex = r"s3://([\w._-]+)/([\w./_-]+)"
-        m = re.match(regex, dir_path)
-        s3bucket_name = m.group(1)
-        s3prefix = m.group(2)
-
-        s3 = boto3.resource('s3')
-        s3bucket = s3.Bucket(s3bucket_name)
-
-        # Get all file names in the `s3bucket` with the prefix `s3prefix`
-        files = []
-        for o in s3bucket.objects.filter(Prefix=s3prefix):
-            path_to_file = os.path.join("s3://%s" % s3bucket_name, o.key)
-            files.append(path_to_file)
-
-        return files
-
+    # if dir_path.startswith('s3'):
+    #     regex = r"s3://([\w._-]+)/([\w./_-]+)"
+    #     m = re.match(regex, dir_path)
+    #     s3bucket_name = m.group(1)
+    #     s3prefix = m.group(2)
+    #
+    #     s3 = boto3.resource('s3')
+    #     s3bucket = s3.Bucket(s3bucket_name)
+    #
+    #     # Get all file names in the `s3bucket` with the prefix `s3prefix`
+    #     files = []
+    #     for o in s3bucket.objects.filter(Prefix=s3prefix):
+    #         path_to_file = os.path.join("s3://%s" % s3bucket_name, o.key)
+    #         files.append(path_to_file)
+    #
+    #     return files
+    #
     if not os.path.isdir(dir_path):
         if os.path.exists(dir_path):
             logger.warning('Provided path is not a directory, defaulting to parent dir: %s',
