@@ -26,7 +26,7 @@ s3: data/external/aisles.csv data/external/departments.csv data/external/order_p
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
 	python src/generate_features.py --download ${DOWNLOAD}
 
-features: data/features/factors.csv data/features/order_types.csv
+features: data/features/shoppers.csv data/features/baskets.csv
 
 # can change MODE to 'rds' to use RDS db (must have MYSQL_X vars in env)
 db: src/db.py
