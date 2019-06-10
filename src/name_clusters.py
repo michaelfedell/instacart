@@ -30,14 +30,16 @@ def run_manual():
 
 
 def run_from_file(path):
+    print('Opening file at %s' % path)
     with open(path) as f:
         reader = csv.reader(f)
-    header = reader.__next__()
-    for line in reader:
-        ot = OrderType.query.filter_by(label=line[0])
-        ot.desc = line[1]
-        db.session.add(ot)
-    db.session.commit()
+        header = reader.__next__()
+        for line in reader:
+            print('Updating description for OT: %s' % line[0])
+            ot = OrderType.query.filter_by(label=int(line[0])).first()
+            ot.desc = line[1]
+            db.session.add(ot)
+        db.session.commit()
 
 
 if __name__ == '__main__':
