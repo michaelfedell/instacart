@@ -13,14 +13,17 @@ import logging
 
 
 logger = logging.getLogger(__name__)
+with open('config/features_config.yml') as f:
+    fc = yaml.load(f)
 
 tmo = get_newest_model(get_files('models', file_filter='*.pkl'))
+if not tmo:
+    tmo = get_newest_model(get_files('s3://{}/models'.format(fc.get('s3_bucket-name')),
+                                     file_filter='*.pkl'))
 factors = pd.read_csv('data/features/factors.csv')
 features = factors.columns
 days = {i: d for i, d in enumerate(['Sunday', 'Monday', 'Tuesday', 'Wednesday',
                                     'Thursday', 'Friday', 'Saturday'])}
-with open('config/features_config.yml') as f:
-    fc = yaml.load(f)
 clust_type = fc.get('cluster-method')
 n_clust = fc.get('gmm').get('n_components') if clust_type == 'gmm' else fc.get('kmeans').get('k')
 
