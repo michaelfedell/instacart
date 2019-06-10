@@ -6,6 +6,7 @@ BUCKET="instacart-store"
 # MODE can be "local" or "rds"
 # Overwrite this by running `make MODE="rds" db` for example
 MODE="local"
+DOWNLOAD="False"
 
 data/external/raw_data.tar.gz:
 	curl -X GET ${DATA_LINK} -o data/external/raw_data.tar.gz && tar -xvzf data/external/raw_data.tar.gz -C data/external && mv data/external/instacart_2017_05_01/* data/external && rm -rf data/external/instacart_2017_05_01
@@ -23,7 +24,7 @@ s3: data/external/aisles.csv data/external/departments.csv data/external/order_p
 	python src/upload_s3.py --bucket ${BUCKET}
 
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
-	python src/generate_features.py
+	python src/generate_features.py --download ${DOWNLOAD}
 
 features: data/features/shoppers.csv data/features/baskets.csv
 

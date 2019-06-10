@@ -1,3 +1,4 @@
+import argparse
 import logging
 import os
 
@@ -289,9 +290,13 @@ def plot(order_types, path):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Generate features for modeling")
+    parser.add_argument('-d', '--download', default='False',
+                        help='If true, will download files from S3 instead of creating from source data')
+    args = parser.parse_args()
     with open(os.path.join(ROOT, 'config', 'features_config.yml'), 'r') as f:
         config = yaml.load(f)
-
+    bucket_name = config.get('s3_bucket-name')
     if config.get('read_from') == 'local':
         data_dir = os.path.join(ROOT, 'data', 'external')
     elif config.get('read_from') == 's3':
@@ -300,98 +305,110 @@ if __name__ == '__main__':
         logger.warning('Invalid read_from option in config should be one of {local, s3} '
                        'not %s. Defaulting to local', config.get('read_from'))
         data_dir = os.path.join(ROOT, 'data', 'external')
-    logger.info('Reading data from %s', data_dir)
 
-    ###########################################################################
-    # Load and format data ####################################################
-    ###########################################################################
-    data = load_data(data_dir)
-    order_products = data['order_products']
-    orders = data['orders']
-    products = data['products']
-    aisles = data['aisles']
-    departments = data['departments']
+    if eval(args.download):
+        data_dir = 's3://{}/'.format(config.get('s3_bucket-name'))
+        logger.info('Downloading feature data from S3 bucket %s', bucket_name)
 
-    with open(os.path.join(ROOT, 'data', 'auxiliary', 'cats.yml'), 'r') as f:
-        cat_map = yaml.load(f)
-        cats = list(cat_map.keys())
-    logger.debug('%d categories loaded: %s', len(cats), cats)
+        order_types = pd.read_csv(os.path.join(data_dir, 'order_types.csv'))
+        factors = pd.read_csv(os.path.join(data_dir, 'factors.csv'))
+        order_types.to_csv('data/features/order_types.csv')
+        factors.to_csv('data/features/factors.csv')
 
-    ###########################################################################
-    # Feature Engineering #####################################################
-    ###########################################################################
-    logger.debug('Engineering product features')
-    n_orders = order_products.groupby('product_id').size().rename('n_orders')
-    products = products.join(n_orders)
-    products = augment_products(products, config.get('popular_threshold', 5))
+        logger.debug('Done with downloads')
 
-    # cats contains mapping of macro-level category (vegetable, beverage, etc) to
-    # all aisles which could fall under that classification
-    for cat in cats:
-        aisles[cat] = aisles['aisle'].isin(cat_map[cat]).astype(int)
+    else:
+        logger.info('Reading data from %s', data_dir)
 
-    logger.debug('Engineering order features')
-    orders = orders.join(
-        order_products['order_id'].value_counts().rename('order_size'))
+        ###########################################################################
+        # Load and format data ####################################################
+        ###########################################################################
+        data = load_data(data_dir)
+        order_products = data['order_products']
+        orders = data['orders']
+        products = data['products']
+        aisles = data['aisles']
+        departments = data['departments']
 
-    # discretize order size to help with long-tail issue
-    # these categories not currently used
-    orders['size_cat'] = pd.cut(orders['order_size'], **config.get('size_cat'))
+        with open(os.path.join(ROOT, 'data', 'auxiliary', 'cats.yml'), 'r') as f:
+            cat_map = yaml.load(f)
+            cats = list(cat_map.keys())
+        logger.debug('%d categories loaded: %s', len(cats), cats)
 
-    # Add order, product, and aisle info to every item in purchases
-    full = order_products.join(orders, on='order_id')
-    full = full.join(products, on='product_id')
-    full = full.join(aisles, on='aisle_id')
+        ###########################################################################
+        # Feature Engineering #####################################################
+        ###########################################################################
+        logger.debug('Engineering product features')
+        n_orders = order_products.groupby('product_id').size().rename('n_orders')
+        products = products.join(n_orders)
+        products = augment_products(products, config.get('popular_threshold', 5))
 
-    # all_orders will be combination of product-level features and metadata (from orders)
-    order_features = cats + ['reordered', 'organic', 'popular']
-    all_orders = full.groupby('order_id')[order_features].mean()
-    all_orders = all_orders.join(orders)
+        # cats contains mapping of macro-level category (vegetable, beverage, etc) to
+        # all aisles which could fall under that classification
+        for cat in cats:
+            aisles[cat] = aisles['aisle'].isin(cat_map[cat]).astype(int)
 
-    ###########################################################################
-    # Clustering of Orders ####################################################
-    ###########################################################################
+        logger.debug('Engineering order features')
+        orders = orders.join(
+            order_products['order_id'].value_counts().rename('order_size'))
 
-    all_orders = cluster(all_orders, config)
-    logger.debug('Aggregating orders by label')
-    order_types = agg_orders(all_orders, config.get('col_types'))
+        # discretize order size to help with long-tail issue
+        # these categories not currently used
+        orders['size_cat'] = pd.cut(orders['order_size'], **config.get('size_cat'))
 
-    ###########################################################################
-    # Build Users Data ########################################################
-    ###########################################################################
+        # Add order, product, and aisle info to every item in purchases
+        full = order_products.join(orders, on='order_id')
+        full = full.join(products, on='product_id')
+        full = full.join(aisles, on='aisle_id')
 
-    # Limit orders to "prior" set for training data
-    logger.debug('Engineering shopper features')
-    shoppers = build_shoppers(all_orders)
-    # n_orders is not relevant to order_type
-    shoppers = shoppers.drop(columns='n_orders')
-    factors = get_factors(shoppers)
+        # all_orders will be combination of product-level features and metadata (from orders)
+        order_features = cats + ['reordered', 'organic', 'popular']
+        all_orders = full.groupby('order_id')[order_features].mean()
+        all_orders = all_orders.join(orders)
 
-    shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
-    baskets_path = os.path.join(ROOT, 'data', 'features', 'baskets.csv')
-    order_types_path = os.path.join(ROOT, 'data', 'features', 'order_types.csv')
-    factors_path = os.path.join(ROOT, 'data', 'features', 'factors.csv')
-    factor_map_path = os.path.join(ROOT, 'data', 'features', 'factor_map.png')
+        ###########################################################################
+        # Clustering of Orders ####################################################
+        ###########################################################################
 
-    logger.info('Feature engineering complete. Saving output...'
-                '\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s',
-                shoppers_path, baskets_path, order_types_path, factors_path, factor_map_path)
+        all_orders = cluster(all_orders, config)
+        logger.debug('Aggregating orders by label')
+        order_types = agg_orders(all_orders, config.get('col_types'))
 
-    shoppers.to_csv(shoppers_path)
-    all_orders.to_csv(baskets_path)
-    order_types.to_csv(order_types_path)
-    factors.to_csv(factors_path, index=False)
-    save_factor_map(factors, factor_map_path)
-    save_heatmap = config.get('save_cluster_map')
-    if save_heatmap:
-        logger.debug('Saving cluster heatmap to %s', save_heatmap)
-        plot(order_types, save_heatmap)
+        ###########################################################################
+        # Build Users Data ########################################################
+        ###########################################################################
 
-    if config.get('upload'):
-        bucket_name = config.get('s3_bucket-name')
-        logger.debug('Uploading to S3 bucket: %s', bucket_name)
-        s3 = boto3.client('s3')
-        s3.upload_file(shoppers_path, bucket_name, 'shoppers.csv')
-        s3.upload_file(baskets_path, bucket_name, 'baskets.csv')
-        s3.upload_file(order_types_path, bucket_name, 'order_types.csv')
-        s3.upload_file(factors_path, bucket_name, 'features.csv')
+        # Limit orders to "prior" set for training data
+        logger.debug('Engineering shopper features')
+        shoppers = build_shoppers(all_orders)
+        # n_orders is not relevant to order_type
+        shoppers = shoppers.drop(columns='n_orders')
+        factors = get_factors(shoppers)
+
+        shoppers_path = os.path.join(ROOT, 'data', 'features', 'shoppers.csv')
+        baskets_path = os.path.join(ROOT, 'data', 'features', 'baskets.csv')
+        order_types_path = os.path.join(ROOT, 'data', 'features', 'order_types.csv')
+        factors_path = os.path.join(ROOT, 'data', 'features', 'factors.csv')
+        factor_map_path = os.path.join(ROOT, 'data', 'features', 'factor_map.png')
+
+        logger.info('Feature engineering complete. Saving output...'
+                    '\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s',
+                    shoppers_path, baskets_path, order_types_path, factors_path, factor_map_path)
+
+        shoppers.to_csv(shoppers_path)
+        all_orders.to_csv(baskets_path)
+        order_types.to_csv(order_types_path)
+        factors.to_csv(factors_path, index=False)
+        save_factor_map(factors, factor_map_path)
+        save_heatmap = config.get('save_cluster_map')
+        if save_heatmap:
+            logger.debug('Saving cluster heatmap to %s', save_heatmap)
+            plot(order_types, save_heatmap)
+
+        if config.get('upload'):
+            logger.debug('Uploading to S3 bucket: %s', bucket_name)
+            s3 = boto3.client('s3')
+            s3.upload_file(shoppers_path, bucket_name, 'shoppers.csv')
+            s3.upload_file(baskets_path, bucket_name, 'baskets.csv')
+            s3.upload_file(order_types_path, bucket_name, 'order_types.csv')
+            s3.upload_file(factors_path, bucket_name, 'factors.csv')
