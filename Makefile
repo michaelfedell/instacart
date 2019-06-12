@@ -48,7 +48,7 @@ descriptions:
 	python src/name_clusters.py -f data/features/cluster_desc.csv
 
 app:
-	flask run -h 0.0.0.0 -p 3000
+	flask run -h 0.0.0.0 -p 9014
 
 # Create a virtual environment named instacart-env
 instacart-env/bin/activate: requirements.txt

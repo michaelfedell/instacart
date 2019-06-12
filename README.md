@@ -66,9 +66,13 @@ Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 
 ## Documentation
 
-## Getting Started
+### Project overview
 
-Although you should be able to run this project in development without any fuss, few configurations are required in order to interface with production resources.
+At a high level, this application takes order and product data and builds a set of order-level features based on temporal stats, basket composition, and other metadata. These orders are then clustered to produce "order_type" labels. Additionally, user profiles are built based on their order histories. A classification model is then trained to predict the order type of a user's next purchase. This model relies on some ~52 attributes mined from order history. To simplify the user interface of the application, these 52 features are mapped to 4 factors via Factor Analysis. Though the model can adapt to changes in feature set, number of order_types, model parameters, etc. The description of clusters (order_types) and feature-factor maps requires manual intervention. The factors can be mapped by examining the `factor_map.png` produced in `data/features` by running the `generate_features.py` script. And the clusters can be examined with help of the `heatmap.png` file which is saved to `app/static` since it is used in the application itself. To facilitate the naming of clusters, `src/name_clusters.py` (or `$ make descriptions`) will connect to the database and add descriptions to ordertypes table based on command line input or a `cluster_desc.csv` file. This is described in further detail in respective scripts.
+
+### Getting Started
+
+Although you should be able to run this project in development without any fuss, a few configurations are required in order to interface with production resources.
 
 Data can be optionally uploaded to/downloaded from an S3 bucket. This will require you to have installed and configured the AWS CLI tools. [More information can be found here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
@@ -76,13 +80,33 @@ Additionally, the application can interface with a cloud database instead of a l
 
 In this phase of the project, all raw data exist in CSV's as downloaded from Instacart [as linked below](##DataLinks). In order to get up and running yourself, you will need to download these large files into `./data/external/` along with several other setup steps required before running the application.
 
+To summarize, the following steps should be taken:
+
+1. Set environment and config files
+2. Download the raw data `make data`
+3. Generate features from data `make features`
+4. Create the database and seed with feature data `make ingest`
+5. Train and save the classification model `make trained-model`
+6. Run the application `make app`
+
+Alternatively, the required files can be created elsewhere and then downloaded from S3 to run the application
+
+1. Set env variables
+2. `make DOWNLOAD=True features`
+3. `make ingest`
+4. `make DOWNLOAD=True trained-model`
+5. `make app`
+
 ### Environment
 
 The `MODE` environment variable will control the use of database (should be 'local' or 'rds')  
 The `BUCKET` environment variable will point S3 interactions to bucket of that name (default 'instacart-store')  
 All `MYSQL_XXX` variables described above will need to be set for rds connection
+The `DOWNLOAD` environment variable can be set to "True" or "False" to omit feature gen and model training and instead download needed files from S3 (so that compute-intensive processes can be run separate from application server)
 
 Running `train_model.py` will set a `TMO_PATH` variable to the created model, alternatively, `src.helpers.get_newest_model` can be used to in conjunction with `src.helpers.get_files` to get the created model (as loaded object)
+
+Some of these require override if using `make` commands (see makefile/argparser help)
 
 ### Using the Makefile
 
@@ -152,7 +176,7 @@ Unit Tests are implemented for helper/utility functions around the modeling pipe
 
 ## Acknowledgements
 
-Thanks to [Finn Qiao](https://github.com/finnqiao) for providing QA and advice on this project as well as to Chloe Mawer adn Fausto Inestroze for their guidance and instruction in the **MSiA 423 - Analytics Value Chain** course.
+Thanks to [Finn Qiao](https://github.com/finnqiao) for providing QA and advice on this project as well as to Chloe Mawer, Fausto Inestroza, and Xiaofeng Zhu for their guidance and instruction in the **MSiA 423 - Analytics Value Chain** course.
 
 ## DataLinks
 
