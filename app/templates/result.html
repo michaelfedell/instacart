@@ -26,7 +26,13 @@
         </div>
         <div class="col-lg-4">
             <img src="{{ url_for('static', filename='favicon.ico') }}" alt="Basket Image" class="img-fluid mx-auto">
-            <p class="caption"> {{ order_type['desc'] }}</p>
+            <p class="caption">
+                {% if order_type['desc'] %}
+                {{ order_type['desc'] }}
+                {% else %}
+                No description available yet
+                {% endif %}
+            </p>
         </div>
     </div>
     <div class="text-center align-content-center my-3" id="submit">

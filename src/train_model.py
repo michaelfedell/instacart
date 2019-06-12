@@ -206,7 +206,7 @@ def run_train_model(args):
         save_split(data)
     if args.output:
         model_path = save_model(model, args.output)
-        if args.upload:
+        if config.get('upload'):
             upload_model(model_path, args.bucket)
 
 
@@ -222,8 +222,6 @@ if __name__ == '__main__':
                         help='path to yaml file with model configurations')
     parser.add_argument('-f', '--force', action='store_true',
                         help='If true will force overwrite of existing model at specified output')
-    parser.add_argument('-u', '--upload', action='store_true',
-                        help='If true will upload trained model object to s3 bucket')
     parser.add_argument('-b', '--bucket', default='instacart-store',
                         help='Name of S3 bucket to up/download files')
     parser.add_argument('--save_split', default=None,

@@ -1,4 +1,5 @@
 model: linear_svc
+upload: False
 scale_data: True
 weight_classes: True
 split:

@@ -1,6 +1,6 @@
 read_from: 'local'
 s3_bucket-name: 'instacart-store'
-upload: True
+upload: False
 save_fac_map: True
 save_cluster_map: app/static/heatmap.png
 

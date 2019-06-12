@@ -1,4 +1,4 @@
-.PHONY: db s3
+.PHONY: db s3 app
 
 DATA_LINK="https://s3.amazonaws.com/instacart-datasets/instacart_online_grocery_shopping_2017_05_01.tar.gz"
 # Overwrite this by running `make BUCKET="my-test-bucket" s3` for example
@@ -38,7 +38,7 @@ ingest: src/db.py data/features/order_types.csv
 setup: data s3 features ingest
 
 models/model.pkl: data/features/shoppers.csv src/train_model.py config/model_config.yml
-	python src/train_model.py --bucket ${BUCKET} -o models/model.pkl --download ${DOWNLOAD} -f -u
+	python src/train_model.py --bucket ${BUCKET} -o models/model.pkl --download ${DOWNLOAD} -f
 
 trained-model: models/model.pkl
 
