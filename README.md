@@ -14,26 +14,34 @@ Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 ├── README.md                         <- You are here
 │
 ├── app
-│   ├── static/                       <- CSS, JS files that remain static
+│   ├── static/                       <- CSS, JS, img, and sample files that remain static
+│   │   ├── shopper_sampleX.csv       <- Random samples of 150 shopper profiles to demonstrate prediction on upload
+│   │   ├── heatmap.png               <- Heatmap showing cluster centroids to help expplain ordertype
 │   ├── templates/                    <- HTML (or other code) that is templated and changes based on a set of inputs
-│   ├── models.py                     <- Creates the data model for the database connected to the Flask app
 │   ├── __init__.py                   <- Initializes the Flask app and database connection
+│   ├── models.py                     <- Creates the data model for the database connected to the Flask app
+│   ├── routes.py                     <- Defines routes available to user and handles response
 │
 ├── config/                           <- Directory for yaml configuration files for model training, scoring, etc
 │   ├── logging/                      <- Configuration files for python loggers
 │   ├── features_config.yml           <- Settings for feature generation
 
-├── data                              <- Folder that contains data used or generated. Only the external/ and sample/ subdirectories are tracked by git
+├── data                              <- Folder that contains data used or generated.
 │   ├── archive/                      <- Place to put archive data is no longer used. Not synced with git
-│   ├── external/                     <- External data sources, will be synced with git
+│   ├── auxiliary/                    <- Hand crafted data to augment source data
 │   │   ├── cats.yml                  <- Curated list of high-level categories by which to classify grocery aisles
+│   ├── external/                     <- External data sources, will be synced with git
 │   │   ├── data_description.md       <- Description of data files provided by Instacart
+│   │   ├── *.csv                     <- Raw data files from instacart source
 │   │
-│   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
+│   ├── features/                     <- Feature-rich data generated from source data
+│   │   ├── factor_map.png            <- Heatmap of factors loading on original features
+│   │   ├── baskets.csv               <- All orders in the dataset augmented with product-level features
+│   │   ├── cluster_desc.csv          <- User-friendly description of clusters labeled by hand after profiling 
+│   │   ├── factors.csv               <- Loading matrix produced by factor analysis
+│   │   ├── order_types.csv           <- Each of the order types described by cluster centroids (feature means/modes) 
+│   │   ├── shoppers.csv              <- Shopper profiles produced by aggregation of order history - used for prediction
 │
-├── docs                              <- A default Sphinx project; see sphinx-doc.org for details
-│
-├── figures/                          <- Generated graphics and figures to be used in reporting
 │
 ├── models/                           <- Trained model objects (TMOs), model predictions, and/or model summaries
 │   ├── archive                       <- No longer current models. This directory is included in the .gitignore and is not tracked by git
@@ -46,21 +54,20 @@ Or, to see the planned work, check out the TODO: [issues]() or [ZenHub Board]()
 │
 ├── src                               <- Source scripts for the project
 │   ├── archive/                      <- No longer current scripts.
-│   ├── helpers/                      <- Helper scripts used in main src files
-│   ├── sql/                          <- SQL source code
 │   ├── db.py                         <- Script for creating and optionally populating database
-│   ├── evaluate_model.py             <- Script for evaluating model performance
 │   ├── generate_features.py          <- Script for cleaning and transforming data and generating features used in training and scoring.
-│   ├── postprocess.py                <- Script for postprocessing predictions and model results
+│   ├── helpers.py                    <- Helper functions used in across src and app files
+│   ├── name_clusters.py              <- Utility script to easily update ordertypes in database with cluster descriptions
+│   ├── score_model.py                <- Script for scoring new predictions using a trained model
 │   ├── train_model.py                <- Script for training machine learning model(s)
 │   ├── upload_s3.py                  <- Script for uploading local files to an S3 bucket
-│   ├── score_model.py                <- Script for scoring new predictions using a trained model
 │
 ├── test/                             <- Files necessary for running model tests (see documentation below)
-
-├── run.py                            <- Simplifies the execution of one or more of the src scripts
-├── app.py                            <- Flask wrapper for running the model
+│
 ├── config.py                         <- Configuration file for Flask app
+├── instacart.py                      <- Flask wrapper for running the model
+├── .flaskenv                         <- Sets Flask-specific env vars - ignored from git
+├── Makefile                          <- Simplifies the execution of one or more of the src scripts
 ├── requirements.txt                  <- Python package dependencies
 ```
 
@@ -173,6 +180,12 @@ make MODE="rds" ingest
 
 Unit Tests are implemented for helper/utility functions around the modeling pipeline wherever deemed appropriate. To run tests, simply execute `$ pytest` from the project root directory
 
+## Next Steps
+
+ - Define order types based on relevant KPI's instead of clustering
+ - Containerize application
+ - Integrate project with CI/CD pipeline
+ - Add health checks for cluster-model-factor consistency and tie-in with application UI
 
 ## Acknowledgements
 
