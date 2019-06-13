@@ -1,0 +1,34 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block styles %}
+{{super()}}
+<link href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto:700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+{% endblock %}
+
+{% block title %}
+{% if title %}{{ title }} - InstaCart{% else %}InstaCart{% endif %}
+{% endblock %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>g
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+{# application content needs to be provided in the app_content block #}
+{% block app_content %}{% endblock %}
+{% endblock %}

@@ -62,5 +62,9 @@ instacart-env.bak/
 data/external/*.csv
 data/external/*.tar.gz
 !data/external/cats.yml
-data/features/*.csv
+data/features/*
 data/*.db
+models/*
+!data/features/factor_map.png
+!data/features/cluster_desc.csv
+.flaskenv

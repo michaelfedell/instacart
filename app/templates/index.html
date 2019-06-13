@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}">
+{% endblock %}
+
+{% block app_content %}
+<div class="border-box"></div>
+
+<div class="container py-5">
+    <div class="row align-content-center mx-auto text-center">
+        <div class="col-12">
+            <h1 class="">Welcome to InstaCart BasketPredictor</h1>
+            <h2>We know what you need before you do</h2>
+        </div>r
+    </div>
+    <div class="row">
+        <div class="col-lg-5 text-lg-right" id="left">
+            <p>
+                This application is designed to build on rich shopping history presented by
+                <a href="https://www.instacart.com/datasets/grocery-shopping-2017">InstaCart</a>. Historical
+                shopping data includes 13 million orders from over 3 million users.
+            </p>
+            <p>
+                What can we do with all this data? Machine learning of course. Each individual order is analyzed based
+                on its products and metadata and then clustered with other similar orders.
+            </p>
+            <p>
+                To go even further, we can actually predict each user's most likely next order! This is done by training
+                model to predict the archetype (cluster label) of each user's most recent order based on historical data.
+            </p>
+            <p>
+                To the right, you can simulate a user's historical shopping record by adjusting the toggles. Statistics
+                describing a historical profile have been mapped to the inputs on the right via factor analysis to
+                provide a more intuitive, simplified input.
+            </p>
+            <p>
+                Though this is fun, the real business value lies in mass predictions. Stores and suppliers can upload
+                user purchase history and obtain a breakdown on predicted order types.
+            </p>
+            <p>
+                Both features can be demonstrated via the tools at the right. Hope you enjoy!
+            </p>
+        </div>
+        <div class="col-lg-7 mt-5" id="right">
+            <form action="/result" method="GET">
+                <div class="row" id="inputs">
+                    <div class="col-5">
+                        <div class="form-group">
+                            <label for="freq">How often do you shop?</label>
+                            <select class="form-control form-control-lg" name="frequency" id="freq">
+                                <option value="-3">Monthly</option>
+                                <option value="-1">Every 2 Weeks</option>
+                                <option value="1">Every Week</option>
+                                <option value="3">Twice a Week</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="veg" type="checkbox" value="True" id="veg">
+                                    <label class="form-check-label" for="veg">
+                                        Vegetarian
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="gf" type="checkbox" value="True" id="gf">
+                                    <label class="form-check-label" for="gf">
+                                        Gluten Free
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="xlac" type="checkbox" value="True" id="xlac">
+                                    <label class="form-check-label" for="xlac">
+                                        Lactose Free
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="jon" type="checkbox" value="True" id="jon">
+                                    <label class="form-check-label" for="jon">
+                                        The Jonathan Diet
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-7" id="sliders">
+                        <div class="form-group">
+                            <label for="time">Early Bird<span>Night Owl</span></label>
+                            <input type="range" min="-300" max="300" value="0" class="form-control-range slider"
+                                   name="time" id="time">
+                        </div>
+                        <div class="form-group">
+                            <label for="habit">Creature of Habit<span>Spontaneous</span></label>
+                            <input type="range" min="-300" max="300" value="0" class="form-control-range slider"
+                                   name="habit" id="habit">
+                        </div>
+                        <div class="form-group">
+                            <label for="health">Snacky<span>Healthy</span></label>
+                            <input type="range" min="-300" max="300" value="0" class="form-control-range slider"
+                                   name="health" id="health">
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center align-content-center my-3" id="submit">
+                    <button type="submit" class="btn btn-dark btn-lg mx-auto w-50">Predict Order</button>
+                    <p class="mt-3 mb-0">... or ...</p>
+                    <a href="#upload" title="" data-toggle="modal" data-target="#uploadModal">Upload Shopper
+                        Profiles</a>
+                </div>
+            </form>
+            <!-- Modal -->
+            <div id="uploadModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">File upload form</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Form -->
+                            <form method='post' action='/upload' enctype="multipart/form-data">
+                                Select file : <input type='file' name='file' id='file' class='form-control'><br>
+                                <button type='submit' class='btn btn-info' id='upload'>Upload</button>
+                                <a href="/upload" class="ml-3">Or try a sample</a>
+                            </form>
+
+                            <!-- Preview-->
+                            <div id='preview'></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+{% endblock %}

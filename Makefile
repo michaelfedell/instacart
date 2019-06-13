@@ -1,4 +1,4 @@
-.PHONY: db
+.PHONY: db s3 app
 
 DATA_LINK="https://s3.amazonaws.com/instacart-datasets/instacart_online_grocery_shopping_2017_05_01.tar.gz"
 # Overwrite this by running `make BUCKET="my-test-bucket" s3` for example
@@ -6,6 +6,7 @@ BUCKET="instacart-store"
 # MODE can be "local" or "rds"
 # Overwrite this by running `make MODE="rds" db` for example
 MODE="local"
+DOWNLOAD="False"
 
 data/external/raw_data.tar.gz:
 	curl -X GET ${DATA_LINK} -o data/external/raw_data.tar.gz && tar -xvzf data/external/raw_data.tar.gz -C data/external && mv data/external/instacart_2017_05_01/* data/external && rm -rf data/external/instacart_2017_05_01
@@ -23,7 +24,7 @@ s3: data/external/aisles.csv data/external/departments.csv data/external/order_p
 	python src/upload_s3.py --bucket ${BUCKET}
 
 data/features/shoppers.csv: data/external/aisles.csv data/external/departments.csv data/external/order_products.csv data/external/order_products_prior.csv data/external/orders.csv data/external/products.csv
-	python src/generate_features.py
+	python src/generate_features.py --download ${DOWNLOAD}
 
 features: data/features/shoppers.csv data/features/baskets.csv
 
@@ -31,17 +32,23 @@ features: data/features/shoppers.csv data/features/baskets.csv
 db: src/db.py
 	python src/db.py --mode ${MODE}
 
-ingest: src/db.py data/features/baskets.csv
+ingest: src/db.py data/features/order_types.csv
 	python src/db.py --mode ${MODE} --populate
 
 setup: data s3 features ingest
 
-models/model.pkl: data/features/user-features.csv src/train_model.py config/model_config.yml
-	python src/train_model.py
+models/model.pkl: data/features/shoppers.csv src/train_model.py config/model_config.yml
+	python src/train_model.py --bucket ${BUCKET} -o models/model.pkl --download ${DOWNLOAD} -f
 
 trained-model: models/model.pkl
 
 all: setup trained-model
+
+descriptions:
+	python src/name_clusters.py -f data/features/cluster_desc.csv
+
+app:
+	flask run -h 0.0.0.0 -p 9014
 
 # Create a virtual environment named instacart-env
 instacart-env/bin/activate: requirements.txt
@@ -64,9 +71,6 @@ test:
 # Clean up things
 clean-tests:
 	rm -rf .pytest_cache
-	rm -r test/model/test/
-	mkdir test/model/test
-	touch test/model/test/.gitkeep
 
 clean-env:
 	rm -r instacart-env

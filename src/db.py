@@ -1,16 +1,13 @@
-from sqlalchemy.ext.declarative import declarative_base
 import argparse
 import logging
 import os
-import sys;
+import sys
 
 import pandas as pd
 import sqlalchemy as sql
-from scipy.stats import mode
-from sqlalchemy import Column, Integer, Float
+from sqlalchemy import Column, Integer, Float, String
 from sqlalchemy.ext.declarative import declarative_base
-
-sys.path.appen('..')  # so that config can be imported from project root
+sys.path.append(os.path.dirname(sys.path[0]))  # so that config can be imported from project root
 import config
 import yaml
 
@@ -60,25 +57,25 @@ class OrderType(Base):
     days_since_prior_order = Column(col_types.get('days_since_prior_order', Float), unique=False, nullable=False)
     order_size = Column(col_types.get('order_size', Float), unique=False, nullable=False)
 
+    # Descriptions will be populated by hand upon cluster examination
+    desc = Column(String(240), nullable=True)
+
     def __repr__(self):
         return '<OrderType %s>' % self.label
 
 
-def agg_orders(orders, col_types):
-    """Aggregate orders by each cluster and define cluster characteristics"""
-    amode = lambda x: int(mode(x)[0])  # return the mode value only, not counts
-    # We need to replace the string "mode" in col_types dict with our lambda function for agg
-    col_types = {col: (amode if t == 'mode' else t)
-                 for col, t in col_types.items()}
+def run_ingest(engine_string, order_types_path):
+    """
+    Create db if needed and populate with data
 
-    return orders.groupby('label').agg(col_types)
+    Args:
+        engine_string (str): Connection string to use
+        order_types_path (str): Path to order_types csv describing centroids
 
+    Returns:
 
-def run_ingest(engine_string, baskets_path):
-    orders = pd.read_csv(baskets_path)
-
-    logger.debug('Aggregating orders by label')
-    order_types = agg_orders(orders, col_types)
+    """
+    order_types = pd.read_csv(order_types_path)
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
@@ -91,6 +88,7 @@ def run_ingest(engine_string, baskets_path):
 
 
 def run_build(args):
+    """Create the database with ordertypes table"""
     if args.mode == 'local':
         engine_string = config.SQLITE_DB_STRING
     elif args.mode == 'rds':
@@ -102,6 +100,9 @@ def run_build(args):
                          '`export MYSQL_XXX=YYY` for XXX {USER, PASSWORD, HOST, PORT}')
             logger.info('Defaulting to local sqlite file')
             engine_string = config.SQLITE_DB_STRING
+    else:
+        logger.warning('%s is not a valid mode, defaulting to local', args.mode)
+        engine_string = config.SQLITE_DB_STRING
 
     logger.info('Connecting to: %s', engine_string)
     engine = sql.create_engine(engine_string)
@@ -110,7 +111,7 @@ def run_build(args):
 
     if args.populate:
         logger.debug('Running Ingestion Process')
-        run_ingest(engine_string, args.baskets)
+        run_ingest(engine_string, args.ordertypes)
 
 
 if __name__ == '__main__':
@@ -120,8 +121,8 @@ if __name__ == '__main__':
                         help='Can be either "local" or "rds" (will create sqlite or mysql)')
     parser.add_argument('--populate', action='store_true',
                         help='Will fill database with features if included')
-    parser.add_argument('--baskets', default='data/features/baskets.csv',
-                        help='Path to baskets.csv file')
+    parser.add_argument('--ordertypes', default='data/features/order_types.csv',
+                        help='Path to order_types.csv file')
 
     args = parser.parse_args()
 

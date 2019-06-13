@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/result.css') }}">
+{% endblock %}
+
+{% block app_content %}
+<div class="container">
+    <div class="row align-content-center mx-auto my-3 text-center">
+        <div class="col-12">
+            <h1 class="">Most Likely Next Order</h1>
+            <h3>Order Type: {{ order_type.label }}</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-4 offset-2">
+            <h2>Key Statistics</h2>
+            <ul>
+                {% for i in ['reordered', 'popular', 'organic', 'prepared', 'dairy', 'gluten',
+                'snack', 'meat', 'fish', 'beverage', 'veg'] %}
+                <li class="text-capitalize">{{ i }} items:  {{ '%0.1f%%' % (100*order_type[i]) }}</li>
+                {% endfor %}
+                <li>Ordered at: {{ order_type['order_hour_of_day'] }}:00 on {{ days.get(order_type['order_dow']) }}</li>
+            </ul>
+        </div>
+        <div class="col-lg-4">
+            <img src="{{ url_for('static', filename='favicon.ico') }}" alt="Basket Image" class="img-fluid mx-auto">
+            <p class="caption">
+                {% if order_type['desc'] %}
+                {{ order_type['desc'] }}
+                {% else %}
+                No description available yet
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="text-center align-content-center my-3" id="submit">
+        <a href="#heatmap" title="" data-toggle="modal" data-target="#heatmap">Compare to other order types</a><br>
+        <a href="/" class="btn btn-warning btn-lg mx-auto my-3 w-25">Back to Home</a>
+    </div>
+    <!-- Modal -->
+    <div id="heatmap" class="modal fade" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Cluster Heatmaps</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <img src="{{ url_for('static', filename='heatmap.png') }}" class="img-fluid"
+                         alt="Heatmap showing cluster centroids">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
