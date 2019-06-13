@@ -14,8 +14,8 @@ def get_file_names(top_dir, file_expr):
     Args:
         top_dir (str): The base directory from which to get list_of_files from
     Returns: List of file locations
-    """
 
+    """
     logger.debug('Searching for %s in %s', file_expr, top_dir)
     list_of_files = glob.glob(os.path.join(top_dir, file_expr), recursive=True)
 

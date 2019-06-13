@@ -37,6 +37,7 @@ def predict(model, data):
 
 def expand_factors(factor_components, factor_data):
     """
+    Expand an input represented in lower dimension factors and expand back to full dimensionality features
 
     Args:
         factor_components (np.ndarray or pd.DataFrame): Factor components matrix
@@ -53,20 +54,22 @@ def expand_factors(factor_components, factor_data):
 
 def map_user_input(factor_components, habit, frequency, health, time, veg, gf, xlac, jon, cols=None):
     """
+    Take user input as given in application front-end and map to the corresponding feature space
 
     Args:
-        factor_components:
-        habit:
-        frequency:
-        health:
-        time:
-        veg:
-        gf:
-        xlac:
-        jon:
-        cols:
+        factor_components (np.ndarray or pd.DataFrame): Factor components matrix
+        habit (int): Maps to first factor on standard normal scale
+        frequency (int): Maps to second factor on standard normal scale
+        health (int): Maps to third factor on standard normal scale
+        time (int): Maps to fourth factor on standard normal scale
+        veg (bool): Increases percent_veg feature and decreases meat, fish features
+        gf (bool): Decreases percent_gluten feature
+        xlac (bool): Decreases percent_dairy feature
+        jon (bool): Increases meat, fish features and decreases snack feature (Jonathan Diet)
+        cols (list(str)): List of column names to represent full-dimension features.
 
     Returns:
+        pd.DataFrame: Observations represented in full feature dimensions for modeling
 
     """
     factor_data = np.array([habit, frequency, health, time])
@@ -120,13 +123,15 @@ def get_feature_names(factors_path):
 
 def predict_file(model, f, cols):
     """
+    Predict on batch of observations in a file object
 
     Args:
-        model:
-        f:
-        cols:
+        model (sklearn classifier): Trained model object to perform predictions
+        f (file-like): path to file or file object to read data from (compat with pd.read_csv)
+        cols (list(str)): list of column names to use in model (will compare to columns in data)
 
     Returns:
+        Count of rows for each of the predicted labels as dict. (e.g. {1: 103, 3: 52, 4: 19})
 
     """
     bad_data = False

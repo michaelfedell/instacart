@@ -12,26 +12,21 @@ logger = logging.getLogger(__name__)
 
 
 def get_files(dir_path, file_filter=None, recursive=False):
+    """
+    Get all file paths in a subdirectory matching filter expression
+
+    Args:
+        dir_path (str): path to subdirectory to search
+        file_filter (str): regex filter to apply to search; e.g. "*.csv"
+        recursive (bool): perform recursive glob search if true
+
+    Returns:
+        list(str): list of file paths resulting from search. Empty list if none found
+
+    """
     if not dir_path:
         logger.warning('Must specify a valid path, not %s', dir_path)
 
-    # if dir_path.startswith('s3'):
-    #     regex = r"s3://([\w._-]+)/([\w./_-]+)"
-    #     m = re.match(regex, dir_path)
-    #     s3bucket_name = m.group(1)
-    #     s3prefix = m.group(2)
-    #
-    #     s3 = boto3.resource('s3')
-    #     s3bucket = s3.Bucket(s3bucket_name)
-    #
-    #     # Get all file names in the `s3bucket` with the prefix `s3prefix`
-    #     files = []
-    #     for o in s3bucket.objects.filter(Prefix=s3prefix):
-    #         path_to_file = os.path.join("s3://%s" % s3bucket_name, o.key)
-    #         files.append(path_to_file)
-    #
-    #     return files
-    #
     if not os.path.isdir(dir_path):
         if os.path.exists(dir_path):
             logger.warning('Provided path is not a directory, defaulting to parent dir: %s',
@@ -47,6 +42,16 @@ def get_files(dir_path, file_filter=None, recursive=False):
 
 
 def get_newest_model(files):
+    """
+    Fetch the latest model among the created trained model objects
+
+    Args:
+        files (list(str)): list of paths to pickled trained models
+
+    Returns:
+        (sklearn Classifier): Trained model object ready to make predictions
+
+    """
     logger.info('Checking %d files for pickled model newest->oldest', len(files))
     for f in sorted(files, key=os.path.getctime, reverse=True):
         try:

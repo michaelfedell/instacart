@@ -272,12 +272,32 @@ def get_factors(shoppers, n_components=4, random_state=903, **kwargs):
 
 
 def save_factor_map(factors, path):
+    """
+    Plot a heatmap to visualize loading matrix of factors
+
+    Args:
+        factors (pd.DataFrame): Matrix with factor loadings on original features (row for each factor)
+        path (str): File path to save image once plotted
+
+    Returns:
+
+    """
     fig, ax = plt.subplots(figsize=(10, 15))
     sns.heatmap(factors.T, ax=ax, center=0)
     plt.savefig(path)
 
 
 def plot(order_types, path):
+    """
+    Plot a heatmap to visualize cluster centroids
+
+    Args:
+        order_types (pd.DataFrame): Matrix of cluster centroid values
+        path (str): file path to save image once plotted
+
+    Returns:
+
+    """
     mpl.rcParams['figure.figsize'] = [12, 8]
     if 'label' in order_types.columns:
         order_types = order_types.set_index('label')

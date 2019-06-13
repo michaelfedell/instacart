@@ -8,6 +8,15 @@ from app.models import OrderType
 
 
 def run_manual():
+    """
+    Interactive cluster naming.
+
+    Will show user statistics of each cluster
+    and prompt for written description, using input to update database
+
+    Returns:
+
+    """
     order_types = OrderType.query.all()
 
     print('%d cluster order types have been identified through clustering')
@@ -30,6 +39,19 @@ def run_manual():
 
 
 def run_from_file(path):
+    """
+    Cluster naming from file.
+
+    Will take input file of csv format with a header row of (label,description)
+    and apply the written descriptions to each matching cluster in the database. Allows convenient and
+    reproducible naming of order type clusters.
+
+    Args:
+        path (str): path to required csv file
+
+    Returns:
+
+    """
     print('Opening file at %s' % path)
     with open(path) as f:
         reader = csv.reader(f)

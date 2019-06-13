@@ -65,6 +65,16 @@ class OrderType(Base):
 
 
 def run_ingest(engine_string, order_types_path):
+    """
+    Create db if needed and populate with data
+
+    Args:
+        engine_string (str): Connection string to use
+        order_types_path (str): Path to order_types csv describing centroids
+
+    Returns:
+
+    """
     order_types = pd.read_csv(order_types_path)
 
     logger.info('Connecting to: %s', engine_string)
@@ -78,6 +88,7 @@ def run_ingest(engine_string, order_types_path):
 
 
 def run_build(args):
+    """Create the database with ordertypes table"""
     if args.mode == 'local':
         engine_string = config.SQLITE_DB_STRING
     elif args.mode == 'rds':
